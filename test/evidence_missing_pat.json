@@ -1,0 +1,10 @@
+{
+    "kat": {
+      "tpmVer": "2.0",
+      "kid": "Ad6tvu/erb7v3q2+796tvu8=",
+      "alg": 11,
+      "sig": "ABgACwAgYVIg2f6N0J3TUvk++EsBuMe9HkqffGkUIYgnoKMjgF8AIGeHvWZKgjQLlE/He1KVtZi7NRVUtEY+zmI+pJMYOjNo",
+      "pubArea": "ACMACwAEAGAAAAAQABgACwADABAAIPlsULbsXs4mMf2dnwyH887yIrZ0pbEsws4scDM1ceZFACABdbDMrJo+kEQUPqu/fjSD32i5nSFd8URWhQA7SI0lyQ==",
+      "certInfo": "/1RDR4AXAAQAAABkAAAAAAAAAAAAAwAAAAQAAAAFBgAAAAAAAAAHAAQAAAABAAQAAAAC"
+    }
+}
