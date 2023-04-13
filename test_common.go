@@ -19,7 +19,6 @@ var (
 	testNonce  = []byte("ABABABABABABABABABA")
 	testTPMVer = "2.0"
 	testMagic  = 0xff544347
-	testAlg    = swid.Sha256
 	testPCR    = PCRDetails{
 		PCRinfo:   PCRInfo{HashAlgID: swid.Sha256, PCRs: []int{1, 2, 3}},
 		PCRDigest: make([]byte, crypto.SHA256.Size()),

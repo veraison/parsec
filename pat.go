@@ -15,7 +15,6 @@ import (
 type PAT struct {
 	TpmVer     *string `cbor:"tpmVer" json:"tpmVer"`
 	KID        *[]byte `cbor:"kid" json:"kid"`
-	Alg        *int    `cbor:"alg" json:"alg"`
 	Sig        *[]byte `cbor:"sig" json:"sig"` // This is TPMT_SIGNATURE
 	AttestInfo *[]byte `cbor:"certInfo" json:"attestInfo"`
 }
@@ -46,17 +45,6 @@ func (p *PAT) SetKeyID(v []byte) error {
 	return nil
 }
 
-func (p *PAT) SetAlg(v uint64) error {
-	if alg := swidHashAlgToTPMAlg(v); alg != 0 {
-		alg1 := int(alg)
-		p.Alg = &alg1
-		return nil
-	} else {
-		return fmt.Errorf("unable to set valid algorithm")
-	}
-
-}
-
 func (p PAT) Validate() error {
 	if p.TpmVer == nil {
 		return fmt.Errorf("TPM Version not set")
@@ -70,10 +58,6 @@ func (p PAT) Validate() error {
 
 	if err := validateKID(*p.KID); err != nil {
 		return fmt.Errorf("invalid KID : %w", err)
-	}
-
-	if p.Alg == nil {
-		return fmt.Errorf("missing algorithm identifier")
 	}
 
 	if p.Sig == nil {

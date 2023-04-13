@@ -12,7 +12,6 @@ import (
 	tpm2 "github.com/google/go-tpm/tpm2"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/veraison/swid"
 )
 
 func mustBuildValidPAT(t *testing.T) *PAT {
@@ -27,9 +26,6 @@ func mustBuildValidPAT(t *testing.T) *PAT {
 	sig, err := genSigBytes()
 	require.NoError(t, err)
 	err = p.SetSig(sig)
-	require.NoError(t, err)
-
-	err = p.SetAlg(swid.Sha256)
 	require.NoError(t, err)
 
 	attInfo := &AttestationInfo{}
@@ -53,9 +49,6 @@ func buildInValidPAT(t *testing.T) *PAT {
 	sig, err := genSigBytes()
 	require.NoError(t, err)
 	err = p.SetSig(sig)
-	require.NoError(t, err)
-
-	err = p.SetAlg(swid.Sha256)
 	require.NoError(t, err)
 
 	attInfo := &AttestationInfo{}
@@ -124,9 +117,6 @@ func Test_PAT_Validate(t *testing.T) {
 	err := p.SetTpmVer(testTPMVer)
 	require.NoError(t, err)
 
-	err = p.SetAlg(swid.Sha256)
-	require.NoError(t, err)
-
 	err = p.SetKeyID(testUEID)
 	require.NoError(t, err)
 	err = p.EncodeAttestationInfo(attInfo)
@@ -147,8 +137,6 @@ func Test_PAT_Validate_InvalidSig(t *testing.T) {
 	p.TpmVer = &testTPMVer
 	d := []byte(testUEID)
 	p.KID = &d
-	alg := 5
-	p.Alg = &alg
 	p.Sig = &testInvalidSig
 	expectedErr := "not a valid signature"
 	err := p.Validate()

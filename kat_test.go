@@ -20,9 +20,6 @@ func mustBuildValidKAT(t *testing.T) *KAT {
 	err := k.SetTpmVer(testTPMVer)
 	require.NoError(t, err)
 
-	err = k.SetAlg(testAlg)
-	require.NoError(t, err)
-
 	err = k.SetKeyID(testUEID)
 	require.NoError(t, err)
 
@@ -50,9 +47,6 @@ func mustBuildValidKAT(t *testing.T) *KAT {
 func buildInValidKAT(t *testing.T) *KAT {
 	k := NewKAT()
 	err := k.SetTpmVer(testTPMVer)
-	require.NoError(t, err)
-
-	err = k.SetAlg(testAlg)
 	require.NoError(t, err)
 
 	err = k.SetKeyID(testUEID)

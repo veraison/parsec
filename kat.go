@@ -19,7 +19,6 @@ import (
 type KAT struct {
 	TpmVer   *string `cbor:"tpmVer" json:"tpmVer"`
 	KID      *[]byte `cbor:"kid" json:"kid"`
-	Alg      *int    `cbor:"alg" json:"alg"`
 	Sig      *[]byte `cbor:"sig" json:"sig"`
 	PubArea  *[]byte `cbor:"pubArea" json:"pubArea"`
 	CertInfo *[]byte `cbor:"certInfo" json:"certInfo"`
@@ -45,16 +44,6 @@ func (k *KAT) SetKeyID(v []byte) error {
 
 	k.KID = &v
 	return nil
-}
-
-func (k *KAT) SetAlg(v uint64) error {
-	if alg := swidHashAlgToTPMAlg(v); alg != 0 {
-		alg1 := int(alg)
-		k.Alg = &(alg1)
-		return nil
-	} else {
-		return fmt.Errorf("unable to set valid algorithm")
-	}
 }
 
 func (k *KAT) SetSig(s []byte) error {
