@@ -113,7 +113,7 @@ func Test_KAT_Validate_InvalidKID(t *testing.T) {
 	require.NoError(t, err)
 	data := []byte("AAAAAAA")
 	k.KID = &data
-	expectedErr := "invalid KID : failed to validate UEID: invalid UEID type 65"
+	expectedErr := "invalid KID: failed to validate UEID: invalid UEID type 65"
 	err = k.Validate()
 	assert.EqualError(t, err, expectedErr)
 }

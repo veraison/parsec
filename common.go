@@ -8,6 +8,7 @@ import (
 	"crypto"
 	"crypto/ecdsa"
 	"crypto/rand"
+	"errors"
 	"fmt"
 
 	tpm2 "github.com/google/go-tpm/tpm2"
@@ -48,7 +49,7 @@ func setTpmAttestDefaults(ad *tpm2.AttestationData) {
 func computeHash(alg tpm2.Algorithm, data []byte) ([]byte, error) {
 	h, err := alg.Hash()
 	if err != nil {
-		return nil, fmt.Errorf("unable to compute hash algorthm from algorithm")
+		return nil, fmt.Errorf("unable to compute hash for algorthm: %d, reason: %w", alg, err)
 	}
 
 	hh := h.New()
@@ -57,8 +58,6 @@ func computeHash(alg tpm2.Algorithm, data []byte) ([]byte, error) {
 	}
 	return hh.Sum(nil), nil
 }
-
-type Algo int
 
 func mapAlgToTpmHash(alg Algorithm) tpm2.Algorithm {
 	var ta tpm2.Algorithm
@@ -73,8 +72,8 @@ func mapAlgToTpmHash(alg Algorithm) tpm2.Algorithm {
 		ta = tpm2.AlgUnknown
 	}
 	return ta
-
 }
+
 func swidHashAlgToTPMAlg(algID uint64) tpm2.Algorithm {
 	switch algID {
 	case swid.Sha256:
@@ -83,19 +82,19 @@ func swidHashAlgToTPMAlg(algID uint64) tpm2.Algorithm {
 		return tpm2.AlgSHA384
 	case swid.Sha512:
 		return tpm2.AlgSHA512
-
 	case swid.Sha3_256:
 		return tpm2.AlgSHA3_256
 	case swid.Sha3_384:
 		return tpm2.AlgSHA3_384
 	case swid.Sha3_512:
 		return tpm2.AlgSHA3_512
+	default:
+		return tpm2.AlgUnknown
 	}
-	return 0
 }
+
 func tpmHashAlgToSWIDHash(algID tpm2.Algorithm) uint64 {
 	switch algID {
-
 	case tpm2.AlgSHA256:
 		return swid.Sha256
 	case tpm2.AlgSHA384:
@@ -114,39 +113,32 @@ func tpmHashAlgToSWIDHash(algID tpm2.Algorithm) uint64 {
 }
 
 func verify(key crypto.PublicKey, data []byte, sig []byte) error {
-
 	s, err := tpm2.DecodeSignature(bytes.NewBuffer(sig))
 	if err != nil {
-		return fmt.Errorf("unable to decode the signature %w", err)
+		return fmt.Errorf("unable to decode the signature: %w", err)
 	}
 	alg := s.Alg
 
 	switch alg {
 	case tpm2.AlgECDSA:
 		ha := s.ECC.HashAlg
-		_, err := ha.Hash()
-		if err != nil {
-			return fmt.Errorf("not a hash algorithm: %w", err)
-		}
-
 		hdata, err := computeHash(ha, data)
 		if err != nil {
-			return fmt.Errorf("unable to compute hash for input data")
+			return fmt.Errorf("unable to compute hash for input data: %w", err)
 		}
 		vk, ok := key.(*ecdsa.PublicKey)
 		if !ok {
-			return fmt.Errorf("invalid public key for algorithm: %v", alg)
+			return fmt.Errorf("invalid public key type: %T", key)
 		}
 
 		verified := ecdsa.Verify(vk, hdata, s.ECC.R, s.ECC.S)
 		if !verified {
-			return fmt.Errorf("Verification failed")
+			return errors.New("Verification failed")
 
 		}
 	default:
-		return fmt.Errorf("unsupported signature algorithm 0x%x", alg)
+		return fmt.Errorf("unsupported signature algorithm %d", alg)
 	}
-
 	return nil
 }
 
@@ -154,7 +146,7 @@ func signEcdsa(alg Algorithm, key *ecdsa.PrivateKey, data []byte) ([]byte, error
 	ta := mapAlgToTpmHash(alg)
 	hash, err := computeHash(ta, data)
 	if err != nil {
-		return nil, fmt.Errorf("unable to compute hash : %w", err)
+		return nil, fmt.Errorf("unable to compute hash: %w", err)
 	}
 	r, s, err := ecdsa.Sign(rand.Reader, key, hash)
 	if err != nil {
@@ -170,7 +162,7 @@ func signEcdsa(alg Algorithm, key *ecdsa.PrivateKey, data []byte) ([]byte, error
 	}
 	e, err := sig.Encode()
 	if err != nil {
-		return nil, fmt.Errorf("Signature{%+v}.Encode() returned error: %v", s, err)
+		return nil, fmt.Errorf("signature encode returned error: %w", err)
 	}
 	return e, nil
 }
@@ -185,14 +177,14 @@ func validateKID(v []byte) error {
 
 func validateKatPat(k *KAT, p *PAT) error {
 	if k == nil {
-		return fmt.Errorf("nil key attestation token supplied")
+		return errors.New("nil key attestation token supplied")
 	}
 	if err := k.Validate(); err != nil {
 		return fmt.Errorf("validation of key attestation token failed: %w", err)
 	}
 
 	if p == nil {
-		return fmt.Errorf("nil platform attestation token supplied")
+		return errors.New("nil platform attestation token supplied")
 	}
 	if err := p.Validate(); err != nil {
 		return fmt.Errorf("validation of platform attestation token failed: %w", err)

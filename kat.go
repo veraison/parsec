@@ -7,6 +7,7 @@ import (
 	"crypto"
 	"crypto/ecdsa"
 	"crypto/elliptic"
+	"errors"
 	"fmt"
 
 	tpm2 "github.com/google/go-tpm/tpm2"
@@ -28,7 +29,7 @@ func NewKAT() *KAT {
 
 func (k *KAT) SetTpmVer(v string) error {
 	if v == "" {
-		return fmt.Errorf("empty string specified")
+		return errors.New("empty string specified")
 	}
 	k.TpmVer = &v
 	return nil
@@ -51,41 +52,41 @@ func (k *KAT) SetSig(s []byte) error {
 
 func (k KAT) Validate() error {
 	if k.TpmVer == nil {
-		return fmt.Errorf("TPM Version not set")
+		return errors.New("TPM Version not set")
 	} else if *k.TpmVer == "" {
-		return fmt.Errorf("Empty TPM Version")
+		return errors.New("Empty TPM Version")
 	}
 
 	if k.KID == nil {
-		return fmt.Errorf("missing key identifier")
+		return errors.New("missing key identifier")
 	}
 	if err := validateKID(*k.KID); err != nil {
-		return fmt.Errorf("invalid KID : %w", err)
+		return fmt.Errorf("invalid KID: %w", err)
 	}
 
 	if k.CertInfo == nil {
-		return fmt.Errorf("no certificate information")
+		return errors.New("no certificate information")
 	}
 	_, err := tpm2.DecodeAttestationData(*k.CertInfo)
 	if err != nil {
-		return fmt.Errorf("failed to decode supplied certification information %w", err)
+		return fmt.Errorf("failed to decode certification information: %w", err)
 	}
 
 	if k.Sig == nil {
-		return fmt.Errorf("missing signature")
+		return errors.New("missing signature")
 	}
 	// Check the signature decode results in a success or not?
 	_, err = tpm2.DecodeSignature(bytes.NewBuffer(*k.Sig))
 	if err != nil {
-		return fmt.Errorf("not a valid signature")
+		return fmt.Errorf("not a valid signature: %w", err)
 	}
 
 	if k.PubArea == nil {
-		return fmt.Errorf("missing public key information")
+		return errors.New("missing public key information")
 	}
 	_, err = tpm2.DecodePublic(*k.PubArea)
 	if err != nil {
-		return fmt.Errorf("unable to decode the Public Area %w", err)
+		return fmt.Errorf("unable to decode the Public Area: %w", err)
 	}
 	return nil
 }
@@ -116,16 +117,16 @@ func (k KAT) DecodeCertInfo() (*CertInfo, error) {
 	certInfo := &CertInfo{}
 
 	if k.CertInfo == nil {
-		return nil, fmt.Errorf("no certification information to decode")
+		return nil, errors.New("no certification information in KAT to decode")
 	}
 
 	ad, err := tpm2.DecodeAttestationData(*k.CertInfo)
 	if err != nil {
-		return nil, fmt.Errorf("failed to decode supplied attestation information %w", err)
+		return nil, fmt.Errorf("failed to decode supplied attestation information: %w", err)
 	}
 
 	if ad.AttestedCertifyInfo == nil {
-		return nil, fmt.Errorf("no certify information in the TPMS Attest")
+		return nil, errors.New("no certify information in the TPMS Attest")
 	}
 	certInfo.Magic = ad.Magic
 	certInfo.Type = uint16(ad.Type)
@@ -133,13 +134,13 @@ func (k KAT) DecodeCertInfo() (*CertInfo, error) {
 
 	nameInfo, err := getNameInfo(ad.AttestedCertifyInfo.Name)
 	if err != nil {
-		return nil, fmt.Errorf("unable to decode the Name field")
+		return nil, fmt.Errorf("unable to decode the Name field: %w", err)
 	}
 	certInfo.TpmCertInfo.Name = *nameInfo
 
 	qnameInfo, err := getNameInfo(ad.AttestedCertifyInfo.QualifiedName)
 	if err != nil {
-		return nil, fmt.Errorf("unable to decode the Qualified Name field")
+		return nil, fmt.Errorf("unable to decode the Qualified Name field: %w", err)
 	}
 	certInfo.TpmCertInfo.Name = *qnameInfo
 
@@ -154,8 +155,8 @@ func getNameInfo(name tpm2.Name) (*NameInfo, error) {
 	}
 
 	alg := tpmHashAlgToSWIDHash(name.Digest.Alg)
-	if alg == 0 {
-		return nil, fmt.Errorf("unable to get the algorithm identity")
+	if alg == UnSupportedAlg {
+		return nil, fmt.Errorf("unknown hash algorithm identifier: %d", name.Digest.Alg)
 	}
 	nameInfo.DigInfo.HashAlgID = alg
 	nameInfo.DigInfo.Digest = name.Digest.Value
@@ -165,17 +166,16 @@ func getNameInfo(name tpm2.Name) (*NameInfo, error) {
 
 // DecodePubArea decodes a given public key, from TPMT_PUBLIC structure
 func (k KAT) DecodePubArea() (crypto.PublicKey, error) {
-
 	if k.PubArea == nil {
-		return nil, fmt.Errorf("no public key parameters to decode")
+		return nil, errors.New("no PubArea to decode")
 	}
 	pub, err := tpm2.DecodePublic(*k.PubArea)
 	if err != nil {
-		return nil, fmt.Errorf("unable to decode the Public Area %w", err)
+		return nil, fmt.Errorf("unable to decode the Public Area: %w", err)
 	}
 	pk, err := pub.Key()
 	if err != nil {
-		return nil, fmt.Errorf("unable to get crypto public key from TPM2 public key %w", err)
+		return nil, fmt.Errorf("unable to get crypto public key from TPM2 public key: %w", err)
 	}
 	return pk, nil
 }
@@ -185,15 +185,15 @@ func (k KAT) DecodePubArea() (crypto.PublicKey, error) {
 func (k KAT) Verify(key crypto.PublicKey) error {
 
 	if k.CertInfo == nil || len(*k.CertInfo) == 0 {
-		return fmt.Errorf("no payload content to verify")
+		return errors.New("no payload content to verify")
 	}
 
 	if k.Sig == nil || len(*k.Sig) == 0 {
-		return fmt.Errorf("no signature on the key attestation token")
+		return errors.New("no signature on the key attestation token")
 	}
 	err := verify(key, *k.CertInfo, *k.Sig)
 	if err != nil {
-		return fmt.Errorf("failed to verify signature %w", err)
+		return fmt.Errorf("failed to verify signature: %w", err)
 	}
 	return nil
 }
@@ -204,11 +204,11 @@ func (k *KAT) EncodePubArea(alg Algorithm, key crypto.PublicKey) error {
 	case AlgorithmES256, AlgorithmES384, AlgorithmES512:
 		ek, ok := key.(*ecdsa.PublicKey)
 		if !ok {
-			return fmt.Errorf("invalid ECDSA public key ")
+			return fmt.Errorf("invalid ECDSA public key type: %T", key)
 		}
 
 		if !ek.Curve.IsOnCurve(ek.X, ek.Y) {
-			return fmt.Errorf("public key is not on the curve")
+			return errors.New("public key is not on the curve")
 		}
 
 		// Only following four curves are supported by TPM2
@@ -230,7 +230,7 @@ func (k *KAT) EncodePubArea(alg Algorithm, key crypto.PublicKey) error {
 			hashAlg = tpm2.AlgSHA512
 
 		default:
-			return fmt.Errorf("unsupported curve paramter %d", ek.Curve)
+			return fmt.Errorf("unsupported curve parameter %d", ek.Curve)
 		}
 		p := tpm2.Public{
 			Type:       tpm2.AlgECC,
@@ -247,7 +247,7 @@ func (k *KAT) EncodePubArea(alg Algorithm, key crypto.PublicKey) error {
 		}
 		pk, err := p.Encode()
 		if err != nil {
-			return fmt.Errorf("unable to encode a public key")
+			return fmt.Errorf("unable to encode a public key: %w", err)
 		}
 		k.PubArea = &pk
 	default:
@@ -265,14 +265,16 @@ func (k *KAT) EncodeCertInfo(c CertInfo) error {
 	ad.ExtraData = c.Nonce
 
 	name := tpmutil.Handle(c.TpmCertInfo.Name.Handle)
-	alg := swidHashAlgToTPMAlg(c.TpmCertInfo.Name.DigInfo.HashAlgID)
-	if alg == 0 {
-		return fmt.Errorf("unable to map algorithm")
+	hAlg := c.TpmCertInfo.Name.DigInfo.HashAlgID
+	alg := swidHashAlgToTPMAlg(hAlg)
+	if alg == tpm2.AlgUnknown {
+		return fmt.Errorf("unable to map algorithm: %d", hAlg)
 	}
 	cName := tpmutil.Handle(c.TpmCertInfo.QualifiedName.Handle)
-	cAlg := swidHashAlgToTPMAlg(c.TpmCertInfo.QualifiedName.DigInfo.HashAlgID)
-	if cAlg == 0 {
-		return fmt.Errorf("unable to map algorithm")
+	hAlg = c.TpmCertInfo.QualifiedName.DigInfo.HashAlgID
+	cAlg := swidHashAlgToTPMAlg(hAlg)
+	if cAlg == tpm2.AlgUnknown {
+		return fmt.Errorf("unable to map algorithm: %d", hAlg)
 	}
 
 	ad.AttestedCertifyInfo = &tpm2.CertifyInfo{
@@ -294,7 +296,7 @@ func (k *KAT) EncodeCertInfo(c CertInfo) error {
 
 	encoded, err := ad.Encode()
 	if err != nil {
-		return fmt.Errorf("unable to encode certify information")
+		return fmt.Errorf("unable to encode certify information: %w", err)
 	}
 	k.CertInfo = &encoded
 	return nil

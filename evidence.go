@@ -7,6 +7,7 @@ import (
 	"crypto"
 	"crypto/ecdsa"
 	"encoding/json"
+	"errors"
 	"fmt"
 
 	cbor "github.com/fxamacker/cbor/v2"
@@ -40,7 +41,7 @@ func (e Evidence) ToJSON() ([]byte, error) {
 // the serialized JSON bytes
 func (e *Evidence) FromJSON(data []byte) error {
 	if err := json.Unmarshal(data, e); err != nil {
-		return fmt.Errorf("error unmarshalling Parsec TPM collection %w", err)
+		return fmt.Errorf("error unmarshalling Parsec TPM collection: %w", err)
 	}
 	if err := validateKatPat(e.Kat, e.Pat); err != nil {
 		return fmt.Errorf("validation failed: %w", err)
@@ -74,10 +75,10 @@ func (e Evidence) ToCBOR() ([]byte, error) {
 // Verify verifies the signature on the individual KAT and PAT tokens
 func (e Evidence) Verify(key crypto.PublicKey) error {
 	if e.Kat == nil {
-		return fmt.Errorf("missing Parsec TPM key attestation token")
+		return errors.New("missing Parsec TPM key attestation token")
 	}
 	if e.Pat == nil {
-		return fmt.Errorf("missing Parsec TPM platform attestation token")
+		return errors.New("missing Parsec TPM platform attestation token")
 	}
 	if err := e.Kat.Verify(key); err != nil {
 		return fmt.Errorf("failed to verify signature on key attestation token: %w", err)
@@ -96,11 +97,11 @@ func (e Evidence) Sign(data []byte, alg Algorithm, key crypto.PrivateKey) ([]byt
 	case AlgorithmES256, AlgorithmES384, AlgorithmES512:
 		sk, ok := key.(*ecdsa.PrivateKey)
 		if !ok {
-			return nil, fmt.Errorf("invalid key")
+			return nil, fmt.Errorf("invalid key type: %T", sk)
 		}
 		sig, err := signEcdsa(alg, sk, data)
 		if err != nil {
-			return nil, fmt.Errorf("Sign failed %w", err)
+			return nil, fmt.Errorf("Sign failed: %w", err)
 		}
 		return sig, nil
 	default:

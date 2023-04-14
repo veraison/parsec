@@ -241,7 +241,7 @@ func TestEvidence_Verify_ECKey_Failed(t *testing.T) {
 	pk := key.Public().(*ecdsa.PublicKey)
 
 	err := e.Verify(pk)
-	expectedErr := "failed to verify signature on key attestation token: failed to verify signature Verification failed"
+	expectedErr := "failed to verify signature on key attestation token: failed to verify signature: Verification failed"
 	assert.EqualError(t, err, expectedErr)
 
 }
@@ -252,7 +252,7 @@ func TestEvidence_Verify_RSAKey_Failed(t *testing.T) {
 	pk := key.Public().(*rsa.PublicKey)
 
 	err := e.Verify(pk)
-	expectedErr := "failed to verify signature on key attestation token: failed to verify signature invalid public key for algorithm: ECDSA"
+	expectedErr := "failed to verify signature on key attestation token: failed to verify signature: invalid public key type: *rsa.PublicKey"
 	assert.EqualError(t, err, expectedErr)
 
 }
@@ -289,7 +289,7 @@ func TestEvidence_Sign_Verify_nok(t *testing.T) {
 	require.NoError(t, err)
 
 	err = e.Verify(pk)
-	expectedErr := "failed to verify signature on platform attestation token: failed to verify the signature Verification failed"
+	expectedErr := "failed to verify signature on platform attestation token: failed to verify the signature: Verification failed"
 	assert.EqualError(t, err, expectedErr)
 }
 

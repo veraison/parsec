@@ -138,7 +138,7 @@ func Test_PAT_Validate_InvalidSig(t *testing.T) {
 	d := []byte(testUEID)
 	p.KID = &d
 	p.Sig = &testInvalidSig
-	expectedErr := "not a valid signature"
+	expectedErr := "not a valid signature: unsupported signature algorithm 0x416c673f3c31383739383e"
 	err := p.Validate()
 	assert.EqualError(t, err, expectedErr)
 }
@@ -163,7 +163,7 @@ func Test_PAT_Validate_InvalidKID(t *testing.T) {
 	require.NoError(t, err)
 	data := []byte("AAAAAAA")
 	p.KID = &data
-	expectedErr := "invalid KID : failed to validate UEID: invalid UEID type 65"
+	expectedErr := "invalid KID: failed to validate UEID: invalid UEID type 65"
 	err = p.Validate()
 	assert.EqualError(t, err, expectedErr)
 }
