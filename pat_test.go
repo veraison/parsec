@@ -101,7 +101,7 @@ func Test_PAT_DecodeAttestInfo_ok(t *testing.T) {
 	err = e.FromCBOR(tokenBytes)
 	require.NoError(t, err)
 
-	at, err := e.collection.Pat.GetAttestationInfo()
+	at, err := e.Pat.GetAttestationInfo()
 	require.NoError(t, err)
 	fmt.Printf("received attestation information %x", at.Nonce)
 	require.NoError(t, err)

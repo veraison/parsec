@@ -76,7 +76,7 @@ func Test_KAT_DecodePublicArea_ok(t *testing.T) {
 	err = e.FromCBOR(tokenBytes)
 	require.NoError(t, err)
 
-	at, err := e.collection.Kat.DecodePubArea()
+	at, err := e.Kat.DecodePubArea()
 	require.NoError(t, err)
 	fmt.Printf("received public key %x", at)
 	require.NoError(t, err)
@@ -100,7 +100,7 @@ func Test_KAT_DecodeCertInfo_ok(t *testing.T) {
 	err = e.FromCBOR(tokenBytes)
 	require.NoError(t, err)
 
-	at, err := e.collection.Kat.DecodeCertInfo()
+	at, err := e.Kat.DecodeCertInfo()
 	require.NoError(t, err)
 	fmt.Printf("received public key %x", at)
 	require.NoError(t, err)
