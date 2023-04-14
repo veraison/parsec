@@ -200,6 +200,7 @@ func (k KAT) Verify(key crypto.PublicKey) error {
 	return nil
 }
 
+// Encode Pub Area Encodes both ECDSA and RSA Keys
 func (k *KAT) EncodePubArea(alg cose.Algorithm, key crypto.PublicKey) error {
 
 	switch alg {
