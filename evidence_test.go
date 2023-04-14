@@ -12,7 +12,6 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/veraison/go-cose"
 )
 
 func Test_Evidence_FromCBOR_ok(t *testing.T) {
@@ -262,13 +261,13 @@ func TestEvidence_Sign_Verify_ok(t *testing.T) {
 	key := generateTestECDSAKey(t)
 	pk := key.Public().(*ecdsa.PublicKey)
 	kd := *e.Kat.CertInfo
-	sig, err := e.Sign(kd, cose.AlgorithmES256, key)
+	sig, err := e.Sign(kd, AlgorithmES256, key)
 	require.NoError(t, err)
 	err = e.Kat.SetSig(sig)
 	require.NoError(t, err)
 
 	pd := *e.Pat.AttestInfo
-	sig, err = e.Sign(pd, cose.AlgorithmES256, key)
+	sig, err = e.Sign(pd, AlgorithmES256, key)
 	require.NoError(t, err)
 	err = e.Pat.SetSig(sig)
 	require.NoError(t, err)
@@ -284,7 +283,7 @@ func TestEvidence_Sign_Verify_nok(t *testing.T) {
 
 	kd := *e.Kat.CertInfo
 
-	sig, err := e.Sign(kd, cose.AlgorithmES256, key)
+	sig, err := e.Sign(kd, AlgorithmES256, key)
 	require.NoError(t, err)
 	err = e.Kat.SetSig(sig)
 	require.NoError(t, err)
@@ -299,10 +298,10 @@ func TestEvidence_Sign_nok(t *testing.T) {
 	e := &Evidence{Kat: mustBuildValidKAT(t), Pat: mustBuildValidPAT(t)}
 	key := generateTestECDSAKey(t)
 
-	expectedErr := "unsupported algorithm for signing: -37"
+	expectedErr := "unsupported algorithm for signing: 0"
 	kd := *e.Kat.CertInfo
 
-	_, err := e.Sign(kd, cose.AlgorithmPS256, key)
+	_, err := e.Sign(kd, InValidAlgorithm, key)
 	assert.EqualError(t, err, expectedErr)
 
 }

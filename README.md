@@ -5,11 +5,11 @@ detailed in [attested-tls-poc](https://github.com/CCC-Attestation/attested-tls-p
 
 It provides following features
 
-* Encode a Parsec TPM Evidence Collection, containing a Key Attestation and Platform Attestation 
-information to CBOR and JSON formats
+* Encode a Parsec TPM Evidence, containing a Key Attestation and Platform Attestation 
+evidence and metadata to CBOR and JSON formats
 
-* Decode a CBOR and JSON formatted Parsec TPM Evidence into a Parsec TPM Evidence Collection
+* Decode a CBOR and JSON formatted Parsec TPM Evidence
 
-* Verify the signature on the Key and Platform Attestation elements using the supplied public key
+* Verify the signature on the Key and Platform Attestation data using the supplied public key
 
-* Sign the Supplied Key and/or Platform Attestation elements using the supplied key
+* Sign the input Key and/or Platform Attestation data using the supplied private key

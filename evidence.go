@@ -5,11 +5,11 @@ package parsectpm
 
 import (
 	"crypto"
+	"crypto/ecdsa"
 	"encoding/json"
 	"fmt"
 
 	cbor "github.com/fxamacker/cbor/v2"
-	"github.com/veraison/go-cose"
 )
 
 // Evidence is a collection of Parsec TPM Key and Platform Attestation objects
@@ -90,11 +90,15 @@ func (e Evidence) Verify(key crypto.PublicKey) error {
 
 // Sign creates a TPMS Signature bytes by signing over the given data by
 // key supplied by key paramter
-func (e Evidence) Sign(data []byte, alg cose.Algorithm, key crypto.PrivateKey) ([]byte, error) {
+func (e Evidence) Sign(data []byte, alg Algorithm, key crypto.PrivateKey) ([]byte, error) {
 
 	switch alg {
-	case cose.AlgorithmES256, cose.AlgorithmES384, cose.AlgorithmES512:
-		sig, err := signEcdsa(alg, key, data)
+	case AlgorithmES256, AlgorithmES384, AlgorithmES512:
+		sk, ok := key.(*ecdsa.PrivateKey)
+		if !ok {
+			return nil, fmt.Errorf("invalid key")
+		}
+		sig, err := signEcdsa(alg, sk, data)
 		if err != nil {
 			return nil, fmt.Errorf("Sign failed %w", err)
 		}

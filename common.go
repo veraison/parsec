@@ -14,12 +14,22 @@ import (
 	tpm2 "github.com/google/go-tpm/tpm2"
 	"github.com/google/go-tpm/tpmutil"
 	"github.com/veraison/eat"
-	"github.com/veraison/go-cose"
 	"github.com/veraison/swid"
 )
 
 const (
 	DefaultTPMHandle = tpmutil.Handle(100)
+)
+
+// Algorithms supported by this library
+
+type Algorithm uint16
+
+const (
+	InValidAlgorithm = 0
+	AlgorithmES256   = 1
+	AlgorithmES384   = 2
+	AlgorithmES512   = 3
 )
 
 func setTpmAttestDefaults(ad *tpm2.AttestationData) {
@@ -51,17 +61,19 @@ func computeHash(alg tpm2.Algorithm, data []byte) ([]byte, error) {
 
 type Algo int
 
-func mapCoseAlgToTpmdHash(coseAlg cose.Algorithm) tpm2.Algorithm {
-	var alg tpm2.Algorithm
-	switch coseAlg {
-	case cose.AlgorithmES256:
-		alg = tpm2.AlgSHA256
-	case cose.AlgorithmES384:
-		alg = tpm2.AlgSHA384
-	case cose.AlgorithmES512:
-		alg = tpm2.AlgSHA512
+func mapAlgToTpmHash(alg Algorithm) tpm2.Algorithm {
+	var ta tpm2.Algorithm
+	switch alg {
+	case AlgorithmES256:
+		ta = tpm2.AlgSHA256
+	case AlgorithmES384:
+		ta = tpm2.AlgSHA384
+	case AlgorithmES512:
+		ta = tpm2.AlgSHA512
+	default:
+		ta = tpm2.AlgUnknown
 	}
-	return alg
+	return ta
 
 }
 func swidHashAlgToTPMAlg(algID uint64) tpm2.Algorithm {
@@ -164,17 +176,13 @@ func verify(key crypto.PublicKey, data []byte, sig []byte) error {
 	return nil
 }
 
-func signEcdsa(alg cose.Algorithm, key crypto.PrivateKey, data []byte) ([]byte, error) {
-	sk, ok := key.(*ecdsa.PrivateKey)
-	if !ok {
-		return nil, fmt.Errorf("invalid key")
-	}
-	ta := mapCoseAlgToTpmdHash(alg)
+func signEcdsa(alg Algorithm, key *ecdsa.PrivateKey, data []byte) ([]byte, error) {
+	ta := mapAlgToTpmHash(alg)
 	hash, err := computeHash(ta, data)
 	if err != nil {
 		return nil, fmt.Errorf("unable to compute hash : %w", err)
 	}
-	r, s, err := ecdsa.Sign(rand.Reader, sk, hash)
+	r, s, err := ecdsa.Sign(rand.Reader, key, hash)
 	if err != nil {
 		return nil, fmt.Errorf("ecdsa signing failed: %w", err)
 	}
