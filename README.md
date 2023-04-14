@@ -1,7 +1,7 @@
 # parsec-tpm
 
-A Library to Encode and Decode Parsec TPM Evidence as
-detailed in [attested-tls-poc](github.com/CCC-Attestation/attested-tls-poc)
+A Library to handle Parsec TPM Evidence as
+detailed in [attested-tls-poc](https://github.com/CCC-Attestation/attested-tls-poc)
 
 It provides following features
 
