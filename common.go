@@ -8,7 +8,6 @@ import (
 	"crypto"
 	"crypto/ecdsa"
 	"crypto/rand"
-	"crypto/rsa"
 	"fmt"
 
 	tpm2 "github.com/google/go-tpm/tpm2"
@@ -123,31 +122,6 @@ func verify(key crypto.PublicKey, data []byte, sig []byte) error {
 	alg := s.Alg
 
 	switch alg {
-	case tpm2.AlgRSASSA, tpm2.AlgRSAPSS:
-		vk, ok := key.(*rsa.PublicKey)
-		if !ok {
-			return fmt.Errorf("invalid public key for algorithm: %v", alg)
-		}
-
-		if vk.N.BitLen() < 2048 {
-			return fmt.Errorf("RSA key must be atleast 2048 bit long")
-		}
-		ha := s.RSA.HashAlg
-		h, err := ha.Hash()
-		if err != nil {
-			return fmt.Errorf("not a hash algorithm: %w", err)
-		}
-
-		hdata, err := computeHash(ha, data)
-		if err != nil {
-			return fmt.Errorf("unable to compute hash for input data")
-		}
-
-		// Get the Signature bytes for RSA
-		sign := s.RSA.Signature
-
-		return rsa.VerifyPKCS1v15(vk, h, hdata, sign)
-
 	case tpm2.AlgECDSA:
 		ha := s.ECC.HashAlg
 		_, err := ha.Hash()

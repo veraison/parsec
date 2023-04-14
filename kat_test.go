@@ -4,7 +4,6 @@ package parsectpm
 
 import (
 	"crypto/ecdsa"
-	"crypto/rsa"
 	"fmt"
 	"os"
 	"testing"
@@ -12,7 +11,6 @@ import (
 	"github.com/google/go-tpm/tpm2"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	cose "github.com/veraison/go-cose"
 )
 
 func mustBuildValidKAT(t *testing.T) *KAT {
@@ -39,7 +37,7 @@ func mustBuildValidKAT(t *testing.T) *KAT {
 	key := generateTestECDSAKey(t)
 	pk := key.Public().(*ecdsa.PublicKey)
 
-	err = k.EncodePubArea(cose.AlgorithmES256, pk)
+	err = k.EncodePubArea(AlgorithmES256, pk)
 	require.NoError(t, err)
 	return k
 }
@@ -63,7 +61,7 @@ func buildInValidKAT(t *testing.T) *KAT {
 	key := generateTestECDSAKey(t)
 	pk := key.Public().(*ecdsa.PublicKey)
 
-	err = k.EncodePubArea(cose.AlgorithmES256, pk)
+	err = k.EncodePubArea(AlgorithmES256, pk)
 	require.NoError(t, err)
 	return k
 }
@@ -79,16 +77,6 @@ func Test_KAT_DecodePublicArea_ok(t *testing.T) {
 	at, err := e.Kat.DecodePubArea()
 	require.NoError(t, err)
 	fmt.Printf("received public key %x", at)
-	require.NoError(t, err)
-}
-
-func Test_KAT_EncodePublicArea_ok(t *testing.T) {
-	k := &KAT{}
-
-	key := generateTestRSAKey(t)
-	pk := key.Public().(*rsa.PublicKey)
-
-	err := k.EncodePubArea(cose.AlgorithmPS256, pk)
 	require.NoError(t, err)
 }
 

@@ -7,13 +7,11 @@ import (
 	"crypto"
 	"crypto/ecdsa"
 	"crypto/elliptic"
-	"crypto/rsa"
 	"fmt"
 
 	tpm2 "github.com/google/go-tpm/tpm2"
 	"github.com/google/go-tpm/tpmutil"
 	"github.com/veraison/eat"
-	cose "github.com/veraison/go-cose"
 )
 
 type KAT struct {
@@ -200,10 +198,10 @@ func (k KAT) Verify(key crypto.PublicKey) error {
 	return nil
 }
 
-func (k *KAT) EncodePubArea(alg cose.Algorithm, key crypto.PublicKey) error {
+func (k *KAT) EncodePubArea(alg Algorithm, key crypto.PublicKey) error {
 
 	switch alg {
-	case cose.AlgorithmES256, cose.AlgorithmES384, cose.AlgorithmES512:
+	case AlgorithmES256, AlgorithmES384, AlgorithmES512:
 		ek, ok := key.(*ecdsa.PublicKey)
 		if !ok {
 			return fmt.Errorf("invalid ECDSA public key ")
@@ -252,31 +250,8 @@ func (k *KAT) EncodePubArea(alg cose.Algorithm, key crypto.PublicKey) error {
 			return fmt.Errorf("unable to encode a public key")
 		}
 		k.PubArea = &pk
-	case cose.AlgorithmPS256, cose.AlgorithmPS384, cose.AlgorithmPS512:
-		rk, ok := key.(*rsa.PublicKey)
-		if !ok {
-			return fmt.Errorf("invalid RSA public key ")
-		}
-
-		p := tpm2.Public{
-			Type:       tpm2.AlgRSA,
-			NameAlg:    tpm2.AlgSHA256,
-			Attributes: tpm2.FlagSign | tpm2.FlagSensitiveDataOrigin | tpm2.FlagUserWithAuth,
-			RSAParameters: &tpm2.RSAParams{
-				Sign: &tpm2.SigScheme{
-					Alg:  tpm2.AlgRSASSA,
-					Hash: tpm2.AlgSHA256,
-				},
-				KeyBits:     2048,
-				ExponentRaw: uint32(rk.E),
-				ModulusRaw:  rk.N.Bytes(),
-			},
-		}
-		pk, err := p.Encode()
-		if err != nil {
-			return fmt.Errorf("unable to encode a public key")
-		}
-		k.PubArea = &pk
+	default:
+		return fmt.Errorf("unknown algorithm: %d", alg)
 	}
 
 	return nil
