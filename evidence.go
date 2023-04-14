@@ -89,8 +89,8 @@ func (e Evidence) Verify(key crypto.PublicKey) error {
 	return nil
 }
 
-// Sign creates a TPMS Signature bytes by signing over the given data by
-// key supplied by key paramter
+// Sign signs the given data using the supplied algorithm and private key and returns
+// signature bytes which is an encoded TPMT_SIGNATURE Structure
 func (e Evidence) Sign(data []byte, alg Algorithm, key crypto.PrivateKey) ([]byte, error) {
 
 	switch alg {

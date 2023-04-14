@@ -121,14 +121,15 @@ func verify(key crypto.PublicKey, data []byte, sig []byte) error {
 
 	switch alg {
 	case tpm2.AlgECDSA:
+		vk, ok := key.(*ecdsa.PublicKey)
+		if !ok {
+			return fmt.Errorf("invalid public key type: %T", key)
+		}
+
 		ha := s.ECC.HashAlg
 		hdata, err := computeHash(ha, data)
 		if err != nil {
 			return fmt.Errorf("unable to compute hash for input data: %w", err)
-		}
-		vk, ok := key.(*ecdsa.PublicKey)
-		if !ok {
-			return fmt.Errorf("invalid public key type: %T", key)
 		}
 
 		verified := ecdsa.Verify(vk, hdata, s.ECC.R, s.ECC.S)
@@ -162,7 +163,7 @@ func signEcdsa(alg Algorithm, key *ecdsa.PrivateKey, data []byte) ([]byte, error
 	}
 	e, err := sig.Encode()
 	if err != nil {
-		return nil, fmt.Errorf("signature encode returned error: %w", err)
+		return nil, fmt.Errorf("signature encoding failed: %w", err)
 	}
 	return e, nil
 }

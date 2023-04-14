@@ -33,6 +33,9 @@ func (p *PAT) SetTpmVer(v string) error {
 }
 
 func (p *PAT) SetSig(s []byte) error {
+	if len(s) == 0 {
+		return errors.New("zero len signature bytes")
+	}
 	p.Sig = &s
 	return nil
 }

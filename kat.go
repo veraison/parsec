@@ -29,7 +29,7 @@ func NewKAT() *KAT {
 
 func (k *KAT) SetTpmVer(v string) error {
 	if v == "" {
-		return errors.New("empty string specified")
+		return errors.New("empty string supplied")
 	}
 	k.TpmVer = &v
 	return nil
@@ -46,6 +46,9 @@ func (k *KAT) SetKeyID(v []byte) error {
 }
 
 func (k *KAT) SetSig(s []byte) error {
+	if len(s) == 0 {
+		return errors.New("zero len signature bytes")
+	}
 	k.Sig = &s
 	return nil
 }
