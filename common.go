@@ -200,3 +200,20 @@ func validateKID(v []byte) error {
 	}
 	return nil
 }
+
+func validateKatPat(k *KAT, p *PAT) error {
+	if k == nil {
+		return fmt.Errorf("nil key attestation token supplied")
+	}
+	if err := k.Validate(); err != nil {
+		return fmt.Errorf("validation of key attestation token failed: %w", err)
+	}
+
+	if p == nil {
+		return fmt.Errorf("nil platform attestation token supplied")
+	}
+	if err := p.Validate(); err != nil {
+		return fmt.Errorf("validation of platform attestation token failed: %w", err)
+	}
+	return nil
+}

@@ -49,7 +49,7 @@ func TestEvidence_ToCBOR_InvalidPat(t *testing.T) {
 	p := buildInValidPAT(t)
 	k := mustBuildValidKAT(t)
 	e := Evidence{Kat: k, Pat: p}
-	expectedErr := "validation of platform attestation token failed missing key identifier"
+	expectedErr := "validation failed: validation of platform attestation token failed: missing key identifier"
 	_, err := e.ToCBOR()
 	assert.EqualError(t, err, expectedErr)
 }
@@ -58,7 +58,7 @@ func TestEvidence_ToCBOR_InvalidKat(t *testing.T) {
 	p := mustBuildValidPAT(t)
 	k := buildInValidKAT(t)
 	e := Evidence{Kat: k, Pat: p}
-	expectedErr := "validation of key attestation token failed missing signature"
+	expectedErr := "validation failed: validation of key attestation token failed: missing signature"
 	_, err := e.ToCBOR()
 	assert.EqualError(t, err, expectedErr)
 }
@@ -66,7 +66,7 @@ func TestEvidence_ToCBOR_InvalidKat(t *testing.T) {
 func TestEvidence_ToCBOR_MissingPat(t *testing.T) {
 	k := mustBuildValidKAT(t)
 	e := Evidence{Kat: k}
-	expectedErr := "missing platform attestation token"
+	expectedErr := "validation failed: nil platform attestation token supplied"
 	_, err := e.ToCBOR()
 	assert.EqualError(t, err, expectedErr)
 }
@@ -74,7 +74,7 @@ func TestEvidence_ToCBOR_MissingPat(t *testing.T) {
 func TestEvidence_ToCBOR_MissingKat(t *testing.T) {
 	p := mustBuildValidPAT(t)
 	e := Evidence{Pat: p}
-	expectedErr := "missing key attestation token"
+	expectedErr := "validation failed: nil key attestation token supplied"
 	_, err := e.ToCBOR()
 	assert.EqualError(t, err, expectedErr)
 }
@@ -96,7 +96,7 @@ func TestEvidence_ToJSON_InvalidPat(t *testing.T) {
 	p := buildInValidPAT(t)
 	k := mustBuildValidKAT(t)
 	e := Evidence{Kat: k, Pat: p}
-	expectedErr := "validation of platform attestation token failed missing key identifier"
+	expectedErr := "validation failed: validation of platform attestation token failed: missing key identifier"
 	_, err := e.ToJSON()
 	assert.EqualError(t, err, expectedErr)
 }
@@ -105,7 +105,7 @@ func TestEvidence_ToJSON_InvalidKat(t *testing.T) {
 	p := mustBuildValidPAT(t)
 	k := buildInValidKAT(t)
 	e := Evidence{Kat: k, Pat: p}
-	expectedErr := "validation of key attestation token failed missing signature"
+	expectedErr := "validation failed: validation of key attestation token failed: missing signature"
 	_, err := e.ToJSON()
 	assert.EqualError(t, err, expectedErr)
 }
@@ -113,7 +113,7 @@ func TestEvidence_ToJSON_InvalidKat(t *testing.T) {
 func TestEvidence_ToJSON_missingPat(t *testing.T) {
 	k := mustBuildValidKAT(t)
 	e := Evidence{Kat: k}
-	expectedErr := "missing platform attestation token"
+	expectedErr := "validation failed: nil platform attestation token supplied"
 	_, err := e.ToJSON()
 	assert.EqualError(t, err, expectedErr)
 }
@@ -121,7 +121,7 @@ func TestEvidence_ToJSON_missingPat(t *testing.T) {
 func TestEvidence_ToJSON_missingKat(t *testing.T) {
 	p := mustBuildValidPAT(t)
 	e := Evidence{Pat: p}
-	expectedErr := "missing key attestation token"
+	expectedErr := "validation failed: nil key attestation token supplied"
 	_, err := e.ToJSON()
 	assert.EqualError(t, err, expectedErr)
 }
@@ -139,7 +139,7 @@ func TestEvidence_FromJSON_missing_pat(t *testing.T) {
 	tokenBytes, err := os.ReadFile("test/evidence_missing_pat.json")
 	require.NoError(t, err)
 
-	expectedErr := "Parsec TPM platform attestation token not set"
+	expectedErr := "validation failed: nil platform attestation token supplied"
 	e := &Evidence{}
 	err = e.FromJSON(tokenBytes)
 	assert.EqualError(t, err, expectedErr)
@@ -149,7 +149,7 @@ func TestEvidence_FromJSON_missing_kat(t *testing.T) {
 	tokenBytes, err := os.ReadFile("test/evidence_missing_kat.json")
 	require.NoError(t, err)
 
-	expectedErr := "Parsec TPM key attestation token not set"
+	expectedErr := "validation failed: nil key attestation token supplied"
 	e := &Evidence{}
 	err = e.FromJSON(tokenBytes)
 	assert.EqualError(t, err, expectedErr)
@@ -159,7 +159,7 @@ func TestEvidence_FromJSON_invalid_pat(t *testing.T) {
 	tokenBytes, err := os.ReadFile("test/evidence_invalid_pat.json")
 	require.NoError(t, err)
 
-	expectedErr := "validation of platform attestation token failed missing key identifier"
+	expectedErr := "validation failed: validation of platform attestation token failed: missing key identifier"
 	e := &Evidence{}
 	err = e.FromJSON(tokenBytes)
 	assert.EqualError(t, err, expectedErr)
@@ -169,7 +169,7 @@ func TestEvidence_FromJSON_invalid_kat(t *testing.T) {
 	tokenBytes, err := os.ReadFile("test/evidence_invalid_kat.json")
 	require.NoError(t, err)
 
-	expectedErr := "validation of key attestation token failed missing public key information"
+	expectedErr := "validation failed: validation of key attestation token failed: missing public key information"
 	e := &Evidence{}
 	err = e.FromJSON(tokenBytes)
 	assert.EqualError(t, err, expectedErr)
@@ -181,7 +181,7 @@ func TestEvidence_SetTokens_invalidPat(t *testing.T) {
 		mustBuildValidKAT(t),
 		buildInValidPAT(t),
 	)
-	expectedErr := "validation of platform attestation token failed: missing key identifier"
+	expectedErr := "validation failed: validation of platform attestation token failed: missing key identifier"
 	assert.EqualError(t, err, expectedErr)
 
 }
@@ -192,7 +192,7 @@ func TestEvidence_SetTokens_invalidKat(t *testing.T) {
 		buildInValidKAT(t),
 		mustBuildValidPAT(t),
 	)
-	expectedErr := "validation of key attestation token failed: missing signature"
+	expectedErr := "validation failed: validation of key attestation token failed: missing signature"
 	assert.EqualError(t, err, expectedErr)
 
 }
@@ -202,7 +202,7 @@ func TestEvidence_SetTokens_missingKat(t *testing.T) {
 		nil,
 		mustBuildValidPAT(t),
 	)
-	expectedErr := "nil token supplied"
+	expectedErr := "validation failed: nil key attestation token supplied"
 	assert.EqualError(t, err, expectedErr)
 }
 

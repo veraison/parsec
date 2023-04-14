@@ -6,7 +6,6 @@ package parsectpm
 import (
 	"crypto"
 	"encoding/json"
-	"errors"
 	"fmt"
 
 	cbor "github.com/fxamacker/cbor/v2"
@@ -20,44 +19,19 @@ type Evidence struct {
 }
 
 func (e *Evidence) SetTokens(k *KAT, p *PAT) error {
-
-	if k == nil || p == nil {
-		return fmt.Errorf("nil token supplied")
-	}
-
-	if err := k.Validate(); err != nil {
-		return fmt.Errorf("validation of key attestation token failed: %w", err)
-	}
-
-	if err := p.Validate(); err != nil {
-		return fmt.Errorf("validation of platform attestation token failed: %w", err)
+	if err := validateKatPat(k, p); err != nil {
+		return fmt.Errorf("validation failed: %w", err)
 	}
 	e.Kat = k
 	e.Pat = p
-
 	return nil
 }
 
 // ToJSON takes key and platform attestation tokens from Evidence
 // and serializes them into valid a JSON
 func (e Evidence) ToJSON() ([]byte, error) {
-
-	if e.Kat == nil {
-		return nil, errors.New("missing key attestation token")
-	}
-
-	k := e.Kat
-	if err := k.Validate(); err != nil {
-		return nil, fmt.Errorf("validation of key attestation token failed %w", err)
-	}
-
-	if e.Pat == nil {
-		return nil, errors.New("missing platform attestation token")
-	}
-
-	p := e.Pat
-	if err := p.Validate(); err != nil {
-		return nil, fmt.Errorf("validation of platform attestation token failed %w", err)
+	if err := validateKatPat(e.Kat, e.Pat); err != nil {
+		return nil, fmt.Errorf("validation failed: %w", err)
 	}
 	return json.Marshal(e)
 }
@@ -65,80 +39,34 @@ func (e Evidence) ToJSON() ([]byte, error) {
 // FromJSON extracts & validates key and platform attestation tokens from
 // the serialized JSON bytes
 func (e *Evidence) FromJSON(data []byte) error {
-
 	if err := json.Unmarshal(data, e); err != nil {
 		return fmt.Errorf("error unmarshalling Parsec TPM collection %w", err)
 	}
-
-	if e.Kat == nil {
-		return fmt.Errorf("Parsec TPM key attestation token not set")
+	if err := validateKatPat(e.Kat, e.Pat); err != nil {
+		return fmt.Errorf("validation failed: %w", err)
 	}
-	k := e.Kat
-	if err := k.Validate(); err != nil {
-		return fmt.Errorf("validation of key attestation token failed %w", err)
-	}
-
-	if e.Pat == nil {
-		return fmt.Errorf("Parsec TPM platform attestation token not set")
-	}
-
-	p := e.Pat
-	if err := p.Validate(); err != nil {
-		return fmt.Errorf("validation of platform attestation token failed %w", err)
-	}
-
 	return nil
 }
 
 // FromCBOR extracts & validates key and platform attestation token
 // from the serialized CBOR collection
 func (e *Evidence) FromCBOR(buf []byte) error {
-
 	err := cbor.Unmarshal(buf, e)
 	if err != nil {
 		return fmt.Errorf("CBOR decoding of Parsec TPM attestation failed %w", err)
 	}
 
-	if e.Kat == nil {
-		return fmt.Errorf("TPM Parsec key attestation token not set")
+	if err := validateKatPat(e.Kat, e.Pat); err != nil {
+		return fmt.Errorf("validation failed: %w", err)
 	}
-	k := e.Kat
-	if err := k.Validate(); err != nil {
-		return fmt.Errorf("validation of key attestation token failed %w", err)
-	}
-
-	if e.Pat == nil {
-		return fmt.Errorf("TPM Parsec platform attestation token not set")
-	}
-
-	p := e.Pat
-	if err := p.Validate(); err != nil {
-		return fmt.Errorf("validation of platform attestation token failed %w", err)
-	}
-
 	return nil
 }
 
 // ToCBOR takes key and platform attestation tokens from Evidence
 // and serializes them into valid a CBOR
 func (e Evidence) ToCBOR() ([]byte, error) {
-
-	if e.Kat == nil {
-		return nil, errors.New("missing key attestation token")
-	}
-
-	k := e.Kat
-	if err := k.Validate(); err != nil {
-		return nil, fmt.Errorf("validation of key attestation token failed %w", err)
-	}
-
-	if e.Pat == nil {
-		return nil, errors.New("missing platform attestation token")
-	}
-
-	p := e.Pat
-	if err := p.Validate(); err != nil {
-		return nil, fmt.Errorf("validation of platform attestation token failed %w", err)
+	if err := validateKatPat(e.Kat, e.Pat); err != nil {
+		return nil, fmt.Errorf("validation failed: %w", err)
 	}
 	return cbor.Marshal(e)
 }
