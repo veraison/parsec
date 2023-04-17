@@ -23,9 +23,7 @@ var (
 		PCRinfo:   PCRInfo{HashAlgID: swid.Sha256, PCRs: []int{1, 2, 3}},
 		PCRDigest: make([]byte, crypto.SHA256.Size()),
 	}
-	testHandle1 = 1
-	testHandle2 = 2
-	testName    = DigestInfo{
+	testName = DigestInfo{
 		HashAlgID: swid.Sha256, Digest: make([]byte, crypto.SHA256.Size())}
 	testUEID = eat.UEID{
 		0x01, // RAND
