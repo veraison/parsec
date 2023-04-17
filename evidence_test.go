@@ -168,7 +168,7 @@ func TestEvidence_FromJSON_invalid_kat(t *testing.T) {
 	tokenBytes, err := os.ReadFile("test/evidence_invalid_kat.json")
 	require.NoError(t, err)
 
-	expectedErr := "validation failed: validation of key attestation token failed: invalid certificate information: no digest information in certify info"
+	expectedErr := "validation failed: validation of key attestation token failed: validation failed: invalid certificate information: no digest information in certify info"
 	e := &Evidence{}
 	err = e.FromJSON(tokenBytes)
 	assert.EqualError(t, err, expectedErr)

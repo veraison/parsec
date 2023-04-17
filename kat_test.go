@@ -25,18 +25,17 @@ func mustBuildValidKAT(t *testing.T) *KAT {
 	err = k.SetSig(sig)
 	require.NoError(t, err)
 
-	certInfo := CertInfo{}
-
-	certInfo.Nonce = testNonce
-	certInfo.Name = testName
-	err = k.EncodeCertInfo(certInfo)
-	require.NoError(t, err)
-
 	key := generateTestECDSAKey(t)
 	pk := key.Public().(*ecdsa.PublicKey)
 
 	err = k.EncodePubArea(AlgorithmES256, pk)
 	require.NoError(t, err)
+
+	certInfo := CertInfo{}
+	certInfo.Nonce = testNonce
+	err = k.EncodeCertInfo(testNonce)
+	require.NoError(t, err)
+
 	return k
 }
 
@@ -48,18 +47,12 @@ func buildInValidKAT(t *testing.T) *KAT {
 	err = k.SetKeyID(testUEID)
 	require.NoError(t, err)
 
-	certInfo := CertInfo{}
-
-	certInfo.Nonce = testNonce
-	certInfo.Name = testName
-
-	err = k.EncodeCertInfo(certInfo)
-	require.NoError(t, err)
-
 	key := generateTestECDSAKey(t)
 	pk := key.Public().(*ecdsa.PublicKey)
 
 	err = k.EncodePubArea(AlgorithmES256, pk)
+	require.NoError(t, err)
+	err = k.EncodeCertInfo(testNonce)
 	require.NoError(t, err)
 	return k
 }

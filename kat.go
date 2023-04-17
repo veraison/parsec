@@ -9,6 +9,7 @@ import (
 	"crypto/elliptic"
 	"errors"
 	"fmt"
+	"reflect"
 
 	tpm2 "github.com/google/go-tpm/tpm2"
 	"github.com/veraison/eat"
@@ -77,27 +78,9 @@ func (k KAT) Validate() error {
 	if sig.Alg != tpm2.AlgECDSA {
 		return fmt.Errorf("unsupported signature algorithm: %d", sig.Alg)
 	}
-
-	cert, err := k.DecodeCertInfo()
-	if err != nil {
-		return fmt.Errorf("invalid certificate information: %w", err)
+	if err := k.validateCertAndPub(); err != nil {
+		return fmt.Errorf("validation failed: %w", err)
 	}
-
-	if k.PubArea == nil {
-		return errors.New("missing public key information")
-	}
-	pub, err := tpm2.DecodePublic(*k.PubArea)
-	if err != nil {
-		return fmt.Errorf("unable to decode the Public Area: %w", err)
-	}
-	if pub.Type != tpm2.AlgECC {
-		return fmt.Errorf("invalid public key type: %d", pub.Type)
-	}
-	ha := swidHashAlgToTPMAlg(cert.Name.HashAlgID)
-	if pub.NameAlg != ha {
-		return fmt.Errorf("hash alg mismatch cert info alg: = %d, pub area alg: =%d", pub.NameAlg, ha)
-	}
-
 	return nil
 }
 
@@ -250,24 +233,33 @@ func (k *KAT) EncodePubArea(alg Algorithm, key crypto.PublicKey) error {
 	return nil
 }
 
-func (k *KAT) EncodeCertInfo(c CertInfo) error {
+func (k *KAT) EncodeCertInfo(nonce []byte) error {
 	ad := tpm2.AttestationData{}
 	setTpmAttestDefaults(&ad)
 	ad.Magic = TpmMagic
 	ad.Type = tpm2.TagAttestCertify
-	ad.ExtraData = c.Nonce
+	ad.ExtraData = nonce
 
-	hAlg := c.Name.HashAlgID
-	alg := swidHashAlgToTPMAlg(hAlg)
-	if alg == tpm2.AlgUnknown {
-		return fmt.Errorf("unable to map algorithm: %d", hAlg)
+	if k.PubArea == nil {
+		return errors.New("cannot encode certInfo, as Pub Area is nil")
+	}
+	// Get the parameters of CerInfo from PubArea
+	pub, err := tpm2.DecodePublic(*k.PubArea)
+	if err != nil {
+		return fmt.Errorf("unable to get algorithm from public area: %w", err)
+	}
+
+	alg := pub.NameAlg
+	data, err := computeHash(alg, *k.PubArea)
+	if err != nil {
+		return fmt.Errorf("unable to compute hash %w", err)
 	}
 
 	ad.AttestedCertifyInfo = &tpm2.CertifyInfo{
 		Name: tpm2.Name{
 			Digest: &tpm2.HashValue{
 				Alg:   alg,
-				Value: c.Name.Digest,
+				Value: data,
 			},
 		},
 	}
@@ -277,5 +269,43 @@ func (k *KAT) EncodeCertInfo(c CertInfo) error {
 		return fmt.Errorf("unable to encode certify information: %w", err)
 	}
 	k.CertInfo = &encoded
+	return nil
+}
+
+func (k KAT) validateCertAndPub() error {
+
+	cert, err := k.DecodeCertInfo()
+	if err != nil {
+		return fmt.Errorf("invalid certificate information: %w", err)
+	}
+
+	if k.PubArea == nil {
+		return errors.New("missing public key information")
+	}
+	pub, err := tpm2.DecodePublic(*k.PubArea)
+	if err != nil {
+		return fmt.Errorf("unable to decode the Public Area: %w", err)
+	}
+	if pub.Type != tpm2.AlgECC {
+		return fmt.Errorf("invalid public key type: %d", pub.Type)
+	}
+	ha := swidHashAlgToTPMAlg(cert.Name.HashAlgID)
+	if ha == tpm2.AlgUnknown {
+		return fmt.Errorf("unable to map algorithm %d", cert.Name.HashAlgID)
+	}
+
+	if pub.NameAlg != ha {
+		return fmt.Errorf("hash alg mismatch cert info alg: = %d, pub area alg: =%d", pub.NameAlg, ha)
+	}
+
+	data, err := computeHash(ha, *k.PubArea)
+	if err != nil {
+		return fmt.Errorf("unable to compute hash %w", err)
+	}
+
+	if !reflect.DeepEqual(data, cert.Name.Digest) {
+		return errors.New("match failed")
+	}
+
 	return nil
 }
