@@ -19,6 +19,7 @@ import (
 
 const (
 	DefaultTPMHandle = tpmutil.Handle(100)
+	TpmMagic         = 0xff544347
 )
 
 // Algorithms supported by this library

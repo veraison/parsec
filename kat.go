@@ -11,7 +11,6 @@ import (
 	"fmt"
 
 	tpm2 "github.com/google/go-tpm/tpm2"
-	"github.com/google/go-tpm/tpmutil"
 	"github.com/veraison/eat"
 )
 
@@ -67,30 +66,38 @@ func (k KAT) Validate() error {
 		return fmt.Errorf("invalid KID: %w", err)
 	}
 
-	if k.CertInfo == nil {
-		return errors.New("no certificate information")
-	}
-	_, err := tpm2.DecodeAttestationData(*k.CertInfo)
-	if err != nil {
-		return fmt.Errorf("failed to decode certification information: %w", err)
-	}
-
 	if k.Sig == nil {
 		return errors.New("missing signature")
 	}
 	// Check the signature decode results in a success or not?
-	_, err = tpm2.DecodeSignature(bytes.NewBuffer(*k.Sig))
+	sig, err := tpm2.DecodeSignature(bytes.NewBuffer(*k.Sig))
 	if err != nil {
 		return fmt.Errorf("not a valid signature: %w", err)
+	}
+	if sig.Alg != tpm2.AlgECDSA {
+		return fmt.Errorf("unsupported signature algorithm: %d", sig.Alg)
+	}
+
+	cert, err := k.DecodeCertInfo()
+	if err != nil {
+		return fmt.Errorf("invalid certificate information: %w", err)
 	}
 
 	if k.PubArea == nil {
 		return errors.New("missing public key information")
 	}
-	_, err = tpm2.DecodePublic(*k.PubArea)
+	pub, err := tpm2.DecodePublic(*k.PubArea)
 	if err != nil {
 		return fmt.Errorf("unable to decode the Public Area: %w", err)
 	}
+	if pub.Type != tpm2.AlgECC {
+		return fmt.Errorf("invalid public key type: %d", pub.Type)
+	}
+	ha := swidHashAlgToTPMAlg(cert.Name.HashAlgID)
+	if pub.NameAlg != ha {
+		return fmt.Errorf("hash alg mismatch cert info alg: = %d, pub area alg: =%d", pub.NameAlg, ha)
+	}
+
 	return nil
 }
 
@@ -99,21 +106,9 @@ type DigestInfo struct {
 	Digest    []byte
 }
 
-type NameInfo struct {
-	Handle  uint32
-	DigInfo DigestInfo
-}
-
-type TpmCertInfo struct {
-	Name          NameInfo
-	QualifiedName NameInfo
-}
-
 type CertInfo struct {
-	Magic       uint32
-	Type        uint16
-	Nonce       []byte
-	TpmCertInfo TpmCertInfo
+	Nonce []byte
+	Name  DigestInfo
 }
 
 func (k KAT) DecodeCertInfo() (*CertInfo, error) {
@@ -131,40 +126,35 @@ func (k KAT) DecodeCertInfo() (*CertInfo, error) {
 	if ad.AttestedCertifyInfo == nil {
 		return nil, errors.New("no certify information in the TPMS Attest")
 	}
-	certInfo.Magic = ad.Magic
-	certInfo.Type = uint16(ad.Type)
+
 	certInfo.Nonce = ad.ExtraData
-
-	nameInfo, err := getNameInfo(ad.AttestedCertifyInfo.Name)
-	if err != nil {
-		return nil, fmt.Errorf("unable to decode the Name field: %w", err)
+	if ad.AttestedCertifyInfo.Name.Digest == nil {
+		return nil, errors.New("no digest information in certify info")
 	}
-	certInfo.TpmCertInfo.Name = *nameInfo
-
-	qnameInfo, err := getNameInfo(ad.AttestedCertifyInfo.QualifiedName)
+	dig, err := getDigestInfo(ad.AttestedCertifyInfo.Name)
 	if err != nil {
-		return nil, fmt.Errorf("unable to decode the Qualified Name field: %w", err)
+		return nil, fmt.Errorf("invalid name in certify info: = %w", err)
 	}
-	certInfo.TpmCertInfo.Name = *qnameInfo
+	certInfo.Name = *dig
 
 	return certInfo, nil
 }
 
-func getNameInfo(name tpm2.Name) (*NameInfo, error) {
-	nameInfo := &NameInfo{}
+func getDigestInfo(name tpm2.Name) (*DigestInfo, error) {
+	digestInfo := &DigestInfo{}
 
 	if name.Handle != nil {
-		nameInfo.Handle = uint32(*name.Handle)
+		return nil, fmt.Errorf("unexpected handle %d, received in the name field", name.Handle)
 	}
 
 	alg := tpmHashAlgToSWIDHash(name.Digest.Alg)
 	if alg == UnSupportedAlg {
 		return nil, fmt.Errorf("unknown hash algorithm identifier: %d", name.Digest.Alg)
 	}
-	nameInfo.DigInfo.HashAlgID = alg
-	nameInfo.DigInfo.Digest = name.Digest.Value
+	digestInfo.HashAlgID = alg
+	digestInfo.Digest = name.Digest.Value
 
-	return nameInfo, nil
+	return digestInfo, nil
 }
 
 // DecodePubArea decodes a given public key, from TPMT_PUBLIC structure
@@ -263,36 +253,21 @@ func (k *KAT) EncodePubArea(alg Algorithm, key crypto.PublicKey) error {
 func (k *KAT) EncodeCertInfo(c CertInfo) error {
 	ad := tpm2.AttestationData{}
 	setTpmAttestDefaults(&ad)
-	ad.Magic = c.Magic
-	ad.Type = tpmutil.Tag(c.Type)
+	ad.Magic = TpmMagic
+	ad.Type = tpm2.TagAttestCertify
 	ad.ExtraData = c.Nonce
 
-	name := tpmutil.Handle(c.TpmCertInfo.Name.Handle)
-	hAlg := c.TpmCertInfo.Name.DigInfo.HashAlgID
+	hAlg := c.Name.HashAlgID
 	alg := swidHashAlgToTPMAlg(hAlg)
 	if alg == tpm2.AlgUnknown {
-		return fmt.Errorf("unable to map algorithm: %d", hAlg)
-	}
-	cName := tpmutil.Handle(c.TpmCertInfo.QualifiedName.Handle)
-	hAlg = c.TpmCertInfo.QualifiedName.DigInfo.HashAlgID
-	cAlg := swidHashAlgToTPMAlg(hAlg)
-	if cAlg == tpm2.AlgUnknown {
 		return fmt.Errorf("unable to map algorithm: %d", hAlg)
 	}
 
 	ad.AttestedCertifyInfo = &tpm2.CertifyInfo{
 		Name: tpm2.Name{
-			Handle: &name,
 			Digest: &tpm2.HashValue{
 				Alg:   alg,
-				Value: c.TpmCertInfo.Name.DigInfo.Digest,
-			},
-		},
-		QualifiedName: tpm2.Name{
-			Handle: &cName,
-			Digest: &tpm2.HashValue{
-				Alg:   cAlg,
-				Value: c.TpmCertInfo.QualifiedName.DigInfo.Digest,
+				Value: c.Name.Digest,
 			},
 		},
 	}

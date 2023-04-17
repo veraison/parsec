@@ -25,16 +25,9 @@ var (
 	}
 	testHandle1 = 1
 	testHandle2 = 2
-	testName    = NameInfo{
-		Handle:  uint32(testHandle1),
-		DigInfo: DigestInfo{HashAlgID: swid.Sha256, Digest: make([]byte, crypto.SHA256.Size())}}
-
-	testQualName = NameInfo{
-		Handle:  uint32(testHandle2),
-		DigInfo: DigestInfo{HashAlgID: swid.Sha256, Digest: make([]byte, crypto.SHA256.Size())}}
-
-	testCertInfo = TpmCertInfo{Name: testName, QualifiedName: testQualName}
-	testUEID     = eat.UEID{
+	testName    = DigestInfo{
+		HashAlgID: swid.Sha256, Digest: make([]byte, crypto.SHA256.Size())}
+	testUEID = eat.UEID{
 		0x01, // RAND
 		0xde, 0xad, 0xbe, 0xef, 0xde, 0xad, 0xbe, 0xef,
 		0xde, 0xad, 0xbe, 0xef, 0xde, 0xad, 0xbe, 0xef, // 16 bytes

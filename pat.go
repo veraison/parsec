@@ -49,6 +49,7 @@ func (p *PAT) SetKeyID(v []byte) error {
 	return nil
 }
 
+// Validate checks the individual elements of Platform Token
 func (p PAT) Validate() error {
 	if p.TpmVer == nil {
 		return errors.New("TPM Version not set")
@@ -68,17 +69,33 @@ func (p PAT) Validate() error {
 		return errors.New("missing signature")
 	}
 	// Check the signature decode results in a success or not?
-	_, err := tpm2.DecodeSignature(bytes.NewBuffer(*p.Sig))
+	sig, err := tpm2.DecodeSignature(bytes.NewBuffer(*p.Sig))
 	if err != nil {
 		return fmt.Errorf("not a valid signature: %w", err)
+	}
+	if sig.Alg != tpm2.AlgECDSA {
+		return fmt.Errorf("unsupported signature algorithm: %d", sig.Alg)
 	}
 
 	if p.AttestInfo == nil {
 		return errors.New("missing attestation data")
 	}
-	_, err = tpm2.DecodeAttestationData(*p.AttestInfo)
+	ad, err := tpm2.DecodeAttestationData(*p.AttestInfo)
 	if err != nil {
 		return fmt.Errorf("unable to decode attestation information: %w", err)
+	}
+
+	if ad.Type != tpm2.TagAttestQuote {
+		return fmt.Errorf("invalid attestation informaion type: %d", ad.Type)
+	}
+
+	if ad.AttestedQuoteInfo == nil {
+		return errors.New("no quote information in the attestInfo")
+	}
+
+	if sig.ECC.HashAlg != ad.AttestedQuoteInfo.PCRSelection.Hash {
+		return fmt.Errorf("mismatch in hash algo sig hash: = %d, quote hash: = %d", sig.ECC.HashAlg, ad.AttestedQuoteInfo.PCRSelection.Hash)
+
 	}
 	return nil
 }

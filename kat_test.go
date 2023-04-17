@@ -8,7 +8,6 @@ import (
 	"os"
 	"testing"
 
-	"github.com/google/go-tpm/tpm2"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -27,10 +26,9 @@ func mustBuildValidKAT(t *testing.T) *KAT {
 	require.NoError(t, err)
 
 	certInfo := CertInfo{}
-	certInfo.Magic = uint32(testMagic)
+
 	certInfo.Nonce = testNonce
-	certInfo.TpmCertInfo = testCertInfo
-	certInfo.Type = uint16(tpm2.TagAttestCertify)
+	certInfo.Name = testName
 	err = k.EncodeCertInfo(certInfo)
 	require.NoError(t, err)
 
@@ -51,10 +49,10 @@ func buildInValidKAT(t *testing.T) *KAT {
 	require.NoError(t, err)
 
 	certInfo := CertInfo{}
-	certInfo.Magic = uint32(testMagic)
+
 	certInfo.Nonce = testNonce
-	certInfo.TpmCertInfo = testCertInfo
-	certInfo.Type = uint16(tpm2.TagAttestCertify)
+	certInfo.Name = testName
+
 	err = k.EncodeCertInfo(certInfo)
 	require.NoError(t, err)
 
