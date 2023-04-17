@@ -24,9 +24,18 @@ func Test_Evidence_FromCBOR_ok(t *testing.T) {
 }
 
 func Test_Evidence_FromCBOR_nok(t *testing.T) {
-	tokenBytes, err := os.ReadFile("test/bad_evidence.cbor")
+	tokenBytes, err := os.ReadFile("test/evidence_invalid.cbor")
 	require.NoError(t, err)
 	expectedErr := "CBOR decoding of Parsec TPM attestation failed cbor: invalid additional information 28 for type byte string"
+	e := &Evidence{}
+	err = e.FromCBOR(tokenBytes)
+	assert.EqualError(t, err, expectedErr)
+}
+
+func Test_Evidence_FromCBOR_nok1(t *testing.T) {
+	tokenBytes, err := os.ReadFile("test/evidence_bad_kat.cbor")
+	require.NoError(t, err)
+	expectedErr := "validation failed: validation of key attestation token failed: validation of cert & pub info failed: invalid certificate information: failed to decode supplied attestation information: decoding Magic/Type: EOF"
 	e := &Evidence{}
 	err = e.FromCBOR(tokenBytes)
 	assert.EqualError(t, err, expectedErr)
@@ -168,7 +177,7 @@ func TestEvidence_FromJSON_invalid_kat(t *testing.T) {
 	tokenBytes, err := os.ReadFile("test/evidence_invalid_kat.json")
 	require.NoError(t, err)
 
-	expectedErr := "validation failed: validation of key attestation token failed: validation failed: invalid certificate information: no digest information in certify info"
+	expectedErr := "validation failed: validation of key attestation token failed: validation of cert & pub info failed: invalid certificate information: no digest information in certify info"
 	e := &Evidence{}
 	err = e.FromJSON(tokenBytes)
 	assert.EqualError(t, err, expectedErr)
@@ -303,5 +312,8 @@ func TestEvidence_Sign_nok(t *testing.T) {
 
 	_, err := e.Sign(kd, InValidAlgorithm, key)
 	assert.EqualError(t, err, expectedErr)
+
+	expectedErr = "invalid key type: ecdsa.Public"
+	_, err = e.Sign(kd, AlgorithmES256, key.Public)
 
 }

@@ -77,7 +77,7 @@ func (k KAT) Validate() error {
 		return fmt.Errorf("unsupported signature algorithm: %d", sig.Alg)
 	}
 	if err := k.validateCertAndPub(); err != nil {
-		return fmt.Errorf("validation failed: %w", err)
+		return fmt.Errorf("validation of cert & pub info failed: %w", err)
 	}
 	return nil
 }
@@ -125,7 +125,7 @@ func getDigestInfo(name tpm2.Name) (*DigestInfo, error) {
 	digestInfo := &DigestInfo{}
 
 	if name.Handle != nil {
-		return nil, fmt.Errorf("unexpected handle %d, received in the name field", name.Handle)
+		return nil, fmt.Errorf("unexpected handle: %d, received in the name field", name.Handle)
 	}
 
 	alg := tpmHashAlgToSWIDHash(name.Digest.Alg)
@@ -204,7 +204,7 @@ func (k *KAT) EncodePubArea(alg Algorithm, key crypto.PublicKey) error {
 			hashAlg = tpm2.AlgSHA512
 
 		default:
-			return fmt.Errorf("unsupported curve parameter %d", ek.Curve)
+			return fmt.Errorf("unsupported curve parameter: %d", ek.Curve)
 		}
 		p := tpm2.Public{
 			Type:       tpm2.AlgECC,
@@ -289,7 +289,7 @@ func (k KAT) validateCertAndPub() error {
 	}
 	ha := swidHashAlgToTPMAlg(cert.Name.HashAlgID)
 	if ha == tpm2.AlgUnknown {
-		return fmt.Errorf("unable to map algorithm %d", cert.Name.HashAlgID)
+		return fmt.Errorf("unable to map algorithm: %d", cert.Name.HashAlgID)
 	}
 
 	if pub.NameAlg != ha {
@@ -298,7 +298,7 @@ func (k KAT) validateCertAndPub() error {
 
 	data, err := computeHash(ha, *k.PubArea)
 	if err != nil {
-		return fmt.Errorf("unable to compute hash %w", err)
+		return fmt.Errorf("unable to compute hash: %w", err)
 	}
 
 	if !reflect.DeepEqual(data, cert.Name.Digest) {
