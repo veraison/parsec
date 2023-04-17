@@ -33,7 +33,8 @@ const (
 	AlgorithmES512   = 3
 )
 
-func setTpmAttestDefaults(ad *tpm2.AttestationData) {
+func NewTpmAttestDefault() tpm2.AttestationData {
+	ad := tpm2.AttestationData{}
 	signer := DefaultTPMHandle
 	ad.ClockInfo = tpm2.ClockInfo{
 		Clock:        3,
@@ -44,7 +45,7 @@ func setTpmAttestDefaults(ad *tpm2.AttestationData) {
 	ad.FirmwareVersion = 7
 	ad.QualifiedSigner = tpm2.Name{
 		Handle: &signer}
-
+	return ad
 }
 
 func computeHash(alg tpm2.Algorithm, data []byte) ([]byte, error) {

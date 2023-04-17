@@ -232,8 +232,7 @@ func (k *KAT) EncodePubArea(alg Algorithm, key crypto.PublicKey) error {
 }
 
 func (k *KAT) EncodeCertInfo(nonce []byte) error {
-	ad := tpm2.AttestationData{}
-	setTpmAttestDefaults(&ad)
+	ad := NewTpmAttestDefault()
 	ad.Magic = TpmMagic
 	ad.Type = tpm2.TagAttestCertify
 	ad.ExtraData = nonce

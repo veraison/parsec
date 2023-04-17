@@ -176,11 +176,10 @@ func (p PAT) Verify(key crypto.PublicKey) error {
 }
 
 func (p *PAT) EncodeAttestationInfo(attInfo *AttestationInfo) error {
-	ad := tpm2.AttestationData{}
 	if attInfo == nil {
 		return errors.New("no attestation information supplied")
 	}
-	setTpmAttestDefaults(&ad)
+	ad := NewTpmAttestDefault()
 	ad.Magic = attInfo.Magic
 	ad.ExtraData = attInfo.Nonce
 	ad.Type = tpm2.TagAttestQuote
