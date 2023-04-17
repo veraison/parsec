@@ -313,7 +313,8 @@ func TestEvidence_Sign_nok(t *testing.T) {
 	_, err := e.Sign(kd, InValidAlgorithm, key)
 	assert.EqualError(t, err, expectedErr)
 
-	expectedErr = "invalid key type: ecdsa.Public"
+	expectedErr = "invalid key type: *ecdsa.PrivateKey"
 	_, err = e.Sign(kd, AlgorithmES256, key.Public)
+	assert.EqualError(t, err, expectedErr)
 
 }
