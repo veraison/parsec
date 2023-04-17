@@ -12,7 +12,6 @@ import (
 	"reflect"
 
 	tpm2 "github.com/google/go-tpm/tpm2"
-	"github.com/veraison/eat"
 )
 
 type KAT struct {
@@ -36,9 +35,8 @@ func (k *KAT) SetTpmVer(v string) error {
 }
 
 func (k *KAT) SetKeyID(v []byte) error {
-	data := eat.UEID(v)
-	if err := data.Validate(); err != nil {
-		return fmt.Errorf("failed to validate UEID: %w", err)
+	if err := validateKID(v); err != nil {
+		return fmt.Errorf("invalid KID: %w", err)
 	}
 
 	k.KID = &v

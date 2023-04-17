@@ -108,3 +108,26 @@ func Test_KAT_Validate_InvalidKID(t *testing.T) {
 	err = k.Validate()
 	assert.EqualError(t, err, expectedErr)
 }
+
+func Test_KAT_SetTpmVer_nok(t *testing.T) {
+	k := &KAT{}
+	expectedErr := "empty string supplied"
+	err := k.SetTpmVer("")
+	assert.EqualError(t, err, expectedErr)
+}
+
+func Test_KAT_SetKeyID_nok(t *testing.T) {
+	k := &KAT{}
+	kid := []byte("RandomGenerator")
+	expectedErr := "invalid KID: failed to validate UEID: invalid UEID type 82"
+	err := k.SetKeyID(kid)
+	assert.EqualError(t, err, expectedErr)
+}
+
+func Test_KAT_SetSig_nok(t *testing.T) {
+	k := &KAT{}
+	sig := []byte("")
+	expectedErr := "zero len signature bytes"
+	err := k.SetSig(sig)
+	assert.EqualError(t, err, expectedErr)
+}

@@ -26,7 +26,7 @@ func NewPAT() *PAT {
 
 func (p *PAT) SetTpmVer(v string) error {
 	if v == "" {
-		return errors.New("empty string specified")
+		return errors.New("empty string supplied")
 	}
 	p.TpmVer = &v
 	return nil

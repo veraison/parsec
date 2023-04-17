@@ -167,3 +167,26 @@ func Test_PAT_Validate_InvalidKID(t *testing.T) {
 	err = p.Validate()
 	assert.EqualError(t, err, expectedErr)
 }
+
+func Test_PAT_SetTpmVer_nok(t *testing.T) {
+	p := &PAT{}
+	expectedErr := "empty string supplied"
+	err := p.SetTpmVer("")
+	assert.EqualError(t, err, expectedErr)
+}
+
+func Test_PAT_SetKeyID_nok(t *testing.T) {
+	p := &PAT{}
+	kid := []byte("RandomGenerator")
+	expectedErr := "invalid KID: failed to validate UEID: invalid UEID type 82"
+	err := p.SetKeyID(kid)
+	assert.EqualError(t, err, expectedErr)
+}
+
+func Test_PAT_SetSig_nok(t *testing.T) {
+	p := &PAT{}
+	sig := []byte("")
+	expectedErr := "zero len signature bytes"
+	err := p.SetSig(sig)
+	assert.EqualError(t, err, expectedErr)
+}
