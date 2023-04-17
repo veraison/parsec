@@ -7,7 +7,6 @@ require (
 	github.com/google/go-tpm v0.3.3
 	github.com/stretchr/testify v1.6.1
 	github.com/veraison/eat v0.0.0-20220117140849-ddaf59d69f53
-	github.com/veraison/go-cose v1.0.0
 	github.com/veraison/swid v0.0.1-beta.6
 )
 
