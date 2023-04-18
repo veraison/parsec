@@ -1,0 +1,16 @@
+{
+    "kat": {
+      "tpmVer": "2.0",
+      "kid": "Ad6tvu/erb7v3q2+796tvu8=",
+      "alg": 11,
+      "sig": "ABgACwAgYVIg2f6N0J3TUvk++EsBuMe9HkqffGkUIYgnoKMjgF8AIGeHvWZKgjQLlE/He1KVtZi7NRVUtEY+zmI+pJMYOjNo",
+      "pubArea": "ACMACwAEAHIAAAAQABgACwADABAAINcy514tAnAELAyHI6LFcxUFDv9jjYmJSt10Jr7O1jt+ACBC2oUtJb67GKXGDZlUgB28ykEYPrVkEVM5aXxOx6mjAQ==",
+      "certInfo": "/1RDR4AXACIAC3WhVHfW3JluqcNOCHXwOsOxPVgig9uWAnVTFW8k+06KAAQwMDAwAAAAAGwB41xNqXfP0VoL/QG9h5anrymG8AAiAAtq9UtayqhEay6dlegM6zijiS+wcbStHDbWrSXd2vvdDQAiAAsBXQZkWI3ghJ9rwaYvFha11wsbsVV/W9wZbq2LVKx1xA=="
+    },
+    "pat": {
+      "tpmVer": "2.0",
+      "alg": 11,
+      "sig": "ABgACwAg6wPjajQKQRKQor8KdMZKmtAFyQKZrRbkD8BfQgI9J+8AINskdj3glCLyhAMlhhwJjl2MzWI5G4P0XvRFFTLkin2n",
+      "attestInfo": "/1RDR4AYAAQAAABkABNBQkFCQUJBQkFCQUJBQkFCQUJBAAAAAAAAAAMAAAAEAAAABQYAAAAAAAAABwAAAAEACwMOAAAAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    }
+}
