@@ -118,8 +118,6 @@ type PCRDetails struct {
 }
 
 type AttestationInfo struct {
-	Magic uint32
-	Type  uint16
 	Nonce []byte
 	PCR   PCRDetails
 }
@@ -135,8 +133,6 @@ func (p PAT) GetAttestationInfo() (*AttestationInfo, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to decode supplied attestation information: %w", err)
 	}
-	attInfo.Magic = ad.Magic
-	attInfo.Type = uint16(ad.Type)
 
 	if ad.AttestedQuoteInfo == nil {
 		return nil, errors.New("no quote information in the attestInfo")
@@ -180,7 +176,7 @@ func (p *PAT) EncodeAttestationInfo(attInfo *AttestationInfo) error {
 		return errors.New("no attestation information supplied")
 	}
 	ad := NewTpmAttestDefault()
-	ad.Magic = attInfo.Magic
+	ad.Magic = TpmMagic
 	ad.ExtraData = attInfo.Nonce
 	ad.Type = tpm2.TagAttestQuote
 	q := &tpm2.QuoteInfo{}

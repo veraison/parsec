@@ -29,7 +29,6 @@ func mustBuildValidPAT(t *testing.T) *PAT {
 	require.NoError(t, err)
 
 	attInfo := &AttestationInfo{}
-	attInfo.Magic = uint32(testMagic)
 	attInfo.Nonce = testNonce
 	attInfo.PCR = testPCR
 
@@ -52,7 +51,6 @@ func buildInValidPAT(t *testing.T) *PAT {
 	require.NoError(t, err)
 
 	attInfo := &AttestationInfo{}
-	attInfo.Magic = uint32(testMagic)
 	attInfo.Nonce = testNonce
 	attInfo.PCR = testPCR
 
@@ -110,7 +108,6 @@ func Test_PAT_DecodeAttestInfo_ok(t *testing.T) {
 func Test_PAT_Validate(t *testing.T) {
 	p := &PAT{}
 	attInfo := &AttestationInfo{}
-	attInfo.Magic = uint32(testMagic)
 	attInfo.Nonce = testNonce
 	attInfo.PCR = testPCR
 

@@ -32,7 +32,7 @@ func Test_Evidence_FromCBOR_nok(t *testing.T) {
 	assert.EqualError(t, err, expectedErr)
 }
 
-func Test_Evidence_FromCBOR_nok1(t *testing.T) {
+func Test_Evidence_FromCBOR_nok_invalid_cert(t *testing.T) {
 	tokenBytes, err := os.ReadFile("test/evidence_bad_kat.cbor")
 	require.NoError(t, err)
 	expectedErr := "validation failed: validation of key attestation token failed: validation of cert & pub info failed: invalid certificate information: failed to decode supplied attestation information: decoding Magic/Type: EOF"
