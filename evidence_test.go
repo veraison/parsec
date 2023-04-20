@@ -7,6 +7,7 @@ import (
 	"crypto/ecdsa"
 	"crypto/rsa"
 	"fmt"
+	"io/fs"
 	"os"
 	"testing"
 
@@ -283,6 +284,33 @@ func TestEvidence_Sign_Verify_ok(t *testing.T) {
 
 	err = e.Verify(pk)
 	require.NoError(t, err)
+}
+
+func TestEvidence_Sign_Verify_jwk_ok(t *testing.T) {
+	e := &Evidence{Kat: mustBuildValidKAT(t), Pat: mustBuildValidPAT(t)}
+	keyBytes, err := os.ReadFile("test/rmm.jwk")
+	require.NoError(t, err)
+	key := KeyFromJWK(t, keyBytes)
+
+	kd := *e.Kat.CertInfo
+	sig, err := e.Sign(kd, AlgorithmES384, key)
+	require.NoError(t, err)
+	err = e.Kat.SetSig(sig)
+	require.NoError(t, err)
+
+	pd := *e.Pat.AttestInfo
+	sig, err = e.Sign(pd, AlgorithmES256, key)
+	require.NoError(t, err)
+	err = e.Pat.SetSig(sig)
+	require.NoError(t, err)
+	pk := pubKeyFromJWK(t, keyBytes)
+	err = e.Verify(pk)
+	require.NoError(t, err)
+	ev_cbor, err := e.ToCBOR()
+	require.NoError(t, err)
+	os.WriteFile("test/rmm_evidence.cbor", ev_cbor, fs.ModeAppend)
+	require.NoError(t, err)
+
 }
 
 func TestEvidence_Sign_Verify_nok(t *testing.T) {
