@@ -53,6 +53,20 @@ func TestEvidence_ToCBOR_ok(t *testing.T) {
 	require.NoError(t, err)
 }
 
+func TestEvidence_ToCBOR_nok_mismatchKID(t *testing.T) {
+	var e Evidence
+	err := e.SetTokens(
+		mustBuildValidKAT(t),
+		mustBuildValidPAT(t),
+	)
+	require.NoError(t, err)
+	err = e.Pat.SetKeyID(testUEID1)
+	require.NoError(t, err)
+	expectedErr := "validation failed: KID mismatch KAT: 01deadbeefdeadbeefdeadbeefdeadbeef and PAT: 01deaebeefdeadbeefdeadbeefdeadbeef"
+	_, err = e.ToCBOR()
+	assert.EqualError(t, err, expectedErr)
+}
+
 func TestEvidence_ToCBOR_InvalidPat(t *testing.T) {
 	p := buildInValidPAT(t)
 	k := mustBuildValidKAT(t)
