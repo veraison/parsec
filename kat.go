@@ -209,7 +209,7 @@ func (k *KAT) EncodePubArea(alg Algorithm, key crypto.PublicKey) error {
 		p := tpm2.Public{
 			Type:       tpm2.AlgECC,
 			NameAlg:    hashAlg,
-			Attributes: tpm2.FlagSign | tpm2.FlagSensitiveDataOrigin | tpm2.FlagUserWithAuth,
+			Attributes: tpm2.FlagSign | tpm2.FlagSensitiveDataOrigin | tpm2.FlagUserWithAuth | tpm2.FlagFixedTPM,
 			ECCParameters: &tpm2.ECCParams{
 				Sign: &tpm2.SigScheme{
 					Alg:  tpm2.AlgECDSA,
@@ -282,6 +282,9 @@ func (k KAT) validateCertAndPub() error {
 	pub, err := tpm2.DecodePublic(*k.PubArea)
 	if err != nil {
 		return fmt.Errorf("unable to decode the Public Area: %w", err)
+	}
+	if (pub.Attributes&tpm2.FlagFixedTPM == 0) || (pub.Attributes&tpm2.FlagSensitiveDataOrigin == 0) {
+		return fmt.Errorf("invalid public key, not a TPM originated key: %x", pub.Attributes)
 	}
 	if pub.Type != tpm2.AlgECC {
 		return fmt.Errorf("invalid public key type: %d", pub.Type)

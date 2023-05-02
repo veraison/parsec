@@ -192,5 +192,8 @@ func validateKatPat(k *KAT, p *PAT) error {
 	if err := p.Validate(); err != nil {
 		return fmt.Errorf("validation of platform attestation token failed: %w", err)
 	}
+	if !bytes.Equal(*k.KID, *p.KID) {
+		return fmt.Errorf("KID mismatch KAT: %x and PAT: %x", *k.KID, *p.KID)
+	}
 	return nil
 }
