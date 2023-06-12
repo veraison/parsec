@@ -17,7 +17,7 @@ type PAT struct {
 	TpmVer     *string `cbor:"tpmVer" json:"tpmVer"`
 	KID        *[]byte `cbor:"kid" json:"kid"`
 	Sig        *[]byte `cbor:"sig" json:"sig"` // This is TPMT_SIGNATURE
-	AttestInfo *[]byte `cbor:"certInfo" json:"attestInfo"`
+	AttestInfo *[]byte `cbor:"attestInfo" json:"attestInfo"`
 }
 
 func NewPAT() *PAT {
