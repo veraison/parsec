@@ -1,22 +1,15 @@
-.DEFAULT_GOAL := test
+.DEFAULT_GOAL := help
 
 export GO111MODULE := on
 export SHELL := /bin/bash
 
-GOPKG := github.com/veraison/parsectpm
+GOPKG := github.com/veraison/parsec/tpm
 
 GOLINT ?= golangci-lint
+GOLINT_ARGS ?= run --timeout=3m -E dupl -E gocritic -E gosimple -E lll -E prealloc
 
-ifeq ($(MAKECMDGOALS),lint)
-GOLINT_ARGS ?= run --timeout=3m
-else
-  ifeq ($(MAKECMDGOALS),lint-extra)
-  GOLINT_ARGS ?= run --timeout=3m --issues-exit-code=0 -E dupl -E gocritic -E gosimple -E lll -E prealloc
-  endif
-endif
-
-.PHONY: lint lint-extra
-lint lint-extra: ; $(GOLINT) $(GOLINT_ARGS)
+.PHONY: lint
+lint: ; $(GOLINT) $(GOLINT_ARGS)
 
 ifeq ($(MAKECMDGOALS),test)
 GOTEST_ARGS ?= -v -race $(GOPKG)
@@ -50,6 +43,5 @@ help:
 	@echo "  * test:       run unit tests for $(GOPKG)"
 	@echo "  * test-cover: run unit tests and measure coverage for $(GOPKG)"
 	@echo "  * lint:       lint sources using default configuration"
-	@echo "  * lint-extra: lint sources using default configuration and some extra checkers"
 	@echo "  * presubmit:  check you are ready to push your local branch to remote"
 	@echo "  * help:       print this menu"

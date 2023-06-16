@@ -1,4 +1,4 @@
-module github.com/veraison/parsectpm
+module github.com/veraison/parsec
 
 go 1.18
 
