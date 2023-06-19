@@ -4,6 +4,7 @@ export GO111MODULE := on
 export SHELL := /bin/bash
 
 GOPKG := github.com/veraison/parsec/tpm
+GOPKG += github.com/veraison/parsec/cca
 
 GOLINT ?= golangci-lint
 GOLINT_ARGS ?= run --timeout=3m -E dupl -E gocritic -E gosimple -E lll -E prealloc
