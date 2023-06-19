@@ -1,15 +1,10 @@
-# parsec-tpm
+# Parsec Key Attestation Formats
 
-A Library to handle Parsec TPM Evidence as
-detailed in [attested-tls-poc](https://github.com/CCC-Attestation/attested-tls-poc)
+A golang package that handles the Parsec Key Attestation formats used in the [attested TLS proof-of-concept](https://github.com/CCC-Attestation/attested-tls-poc) project.
 
-It provides following features
+The formats currently supported are:
 
-* Encode a Parsec TPM Evidence, containing a Key Attestation and Platform Attestation 
-evidence and metadata to CBOR and JSON formats
+* [TPM](https://github.com/CCC-Attestation/attested-tls-poc/blob/main/doc/parsec-evidence-tpm.md)
+* [CCA](https://github.com/CCC-Attestation/attested-tls-poc/blob/main/doc/parsec-evidence-cca.md)
 
-* Decode a CBOR and JSON formatted Parsec TPM Evidence
-
-* Verify the signature on the Key and Platform Attestation data using the supplied public key
-
-* Sign the input Key and/or Platform Attestation data using the supplied private key
+See the README files in [`tpm`](tpm/README.md) and [`cca`](cca/README.md) for more details on the supported features.
