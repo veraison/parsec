@@ -1,7 +1,7 @@
 // Copyright 2023 Contributors to the Veraison project.
 // SPDX-License-Identifier: Apache-2.0
 
-package parsectpm
+package tpm
 
 import (
 	"crypto/ecdsa"
@@ -26,7 +26,7 @@ func Test_Evidence_FromCBOR_ok(t *testing.T) {
 func Test_Evidence_FromCBOR_nok(t *testing.T) {
 	tokenBytes, err := os.ReadFile("test/evidence_invalid.cbor")
 	require.NoError(t, err)
-	expectedErr := "CBOR decoding of Parsec TPM attestation failed cbor: invalid additional information 28 for type byte string"
+	expectedErr := "CBOR decoding of Parsec TPM attestation failed cbor: invalid additional information 28 for type byte string" // nolint:lll
 	e := &Evidence{}
 	err = e.FromCBOR(tokenBytes)
 	assert.EqualError(t, err, expectedErr)
@@ -35,7 +35,7 @@ func Test_Evidence_FromCBOR_nok(t *testing.T) {
 func Test_Evidence_FromCBOR_nok_invalid_cert(t *testing.T) {
 	tokenBytes, err := os.ReadFile("test/evidence_bad_kat.cbor")
 	require.NoError(t, err)
-	expectedErr := "validation failed: validation of key attestation token failed: validation of cert & pub info failed: invalid certificate information: failed to decode supplied attestation information: decoding Magic/Type: EOF"
+	expectedErr := "validation failed: validation of key attestation token failed: validation of cert & pub info failed: invalid certificate information: failed to decode supplied attestation information: decoding Magic/Type: EOF" // nolint:lll
 	e := &Evidence{}
 	err = e.FromCBOR(tokenBytes)
 	assert.EqualError(t, err, expectedErr)
@@ -62,7 +62,7 @@ func TestEvidence_ToCBOR_nok_mismatchKID(t *testing.T) {
 	require.NoError(t, err)
 	err = e.Pat.SetKeyID(testUEID1)
 	require.NoError(t, err)
-	expectedErr := "validation failed: KID mismatch KAT: 01deadbeefdeadbeefdeadbeefdeadbeef and PAT: 01deaebeefdeadbeefdeadbeefdeadbeef"
+	expectedErr := "validation failed: KID mismatch KAT: 01deadbeefdeadbeefdeadbeefdeadbeef and PAT: 01deaebeefdeadbeefdeadbeefdeadbeef" // nolint:lll
 	_, err = e.ToCBOR()
 	assert.EqualError(t, err, expectedErr)
 }
@@ -191,7 +191,7 @@ func TestEvidence_FromJSON_invalid_kat(t *testing.T) {
 	tokenBytes, err := os.ReadFile("test/evidence_invalid_kat.json")
 	require.NoError(t, err)
 
-	expectedErr := "validation failed: validation of key attestation token failed: validation of cert & pub info failed: invalid certificate information: no digest information in certify info"
+	expectedErr := "validation failed: validation of key attestation token failed: validation of cert & pub info failed: invalid certificate information: no digest information in certify info" // nolint:lll
 	e := &Evidence{}
 	err = e.FromJSON(tokenBytes)
 	assert.EqualError(t, err, expectedErr)
@@ -275,7 +275,7 @@ func TestEvidence_Verify_RSAKey_Failed(t *testing.T) {
 	pk := key.Public().(*rsa.PublicKey)
 
 	err := e.Verify(pk)
-	expectedErr := "failed to verify signature on key attestation token: failed to verify signature: invalid public key type: *rsa.PublicKey"
+	expectedErr := "failed to verify signature on key attestation token: failed to verify signature: invalid public key type: *rsa.PublicKey" // nolint:lll
 	assert.EqualError(t, err, expectedErr)
 
 }
@@ -312,7 +312,7 @@ func TestEvidence_Sign_Verify_nok(t *testing.T) {
 	require.NoError(t, err)
 
 	err = e.Verify(pk)
-	expectedErr := "failed to verify signature on platform attestation token: failed to verify the signature: Verification failed"
+	expectedErr := "failed to verify signature on platform attestation token: failed to verify the signature: Verification failed" // nolint:lll
 	assert.EqualError(t, err, expectedErr)
 }
 

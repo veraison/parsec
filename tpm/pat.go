@@ -1,7 +1,7 @@
 // Copyright 2022 Contributors to the Veraison project.
 // SPDX-License-Identifier: Apache-2.0
 
-package parsectpm
+package tpm
 
 import (
 	"bytes"
@@ -94,8 +94,10 @@ func (p PAT) Validate() error {
 	}
 
 	if sig.ECC.HashAlg != ad.AttestedQuoteInfo.PCRSelection.Hash {
-		return fmt.Errorf("mismatch in hash algo sig hash: = %d, quote hash: = %d", sig.ECC.HashAlg, ad.AttestedQuoteInfo.PCRSelection.Hash)
-
+		return fmt.Errorf(
+			"mismatch in hash algo sig hash=%d, quote hash=%d",
+			sig.ECC.HashAlg, ad.AttestedQuoteInfo.PCRSelection.Hash,
+		)
 	}
 	return nil
 }
