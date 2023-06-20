@@ -1,6 +1,6 @@
 # Parsec TPM Key Attestation Format
 
-The `parsec/tpm` package provides following features:
+The `parsec/tpm` package provides the following features:
 
 * Encode a Parsec TPM Evidence, containing a Key Attestation and Platform Attestation 
 evidence and metadata to CBOR and JSON formats

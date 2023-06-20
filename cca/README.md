@@ -1,6 +1,6 @@
 # Parsec CCA Key Attestation Format
 
-The `parsec/cca` package provides following features:
+The `parsec/cca` package provides the following features:
 
 * Decode and validate a CBOR-encoded [Parsec CCA Key Attestation](https://github.com/CCC-Attestation/attested-tls-poc/blob/main/doc/parsec-evidence-cca.md) buffer;
 * Verify the CCA token using the supplied CPAK public key;
