@@ -11,7 +11,7 @@ import (
 	"fmt"
 	"reflect"
 
-	tpm2 "github.com/google/go-tpm/tpm2"
+	tpm2 "github.com/google/go-tpm/legacy/tpm2"
 )
 
 type KAT struct {
