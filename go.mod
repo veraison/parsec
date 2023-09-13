@@ -9,7 +9,7 @@ require (
 	github.com/stretchr/testify v1.8.4
 	github.com/veraison/ccatoken v1.1.0
 	github.com/veraison/eat v0.0.0-20220117140849-ddaf59d69f53
-	github.com/veraison/go-cose v1.1.1-0.20230613195103-433d4c233485
+	github.com/veraison/go-cose v1.1.1-0.20230825153510-da0f9a62ade7
 	github.com/veraison/swid v0.0.1-beta.6
 )
 
@@ -27,7 +27,6 @@ require (
 	github.com/veraison/psatoken v1.2.0 // indirect
 	github.com/x448/float16 v0.8.4 // indirect
 	golang.org/x/crypto v0.0.0-20221005025214-4161e89ecf1b // indirect
-	golang.org/x/exp v0.0.0-20230522175609-2e198f4a06a1 // indirect
 	golang.org/x/sys v0.1.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
