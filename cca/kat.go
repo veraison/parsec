@@ -40,8 +40,6 @@ func (o KAT) Validate() error {
 
 	if o.Cnf == nil {
 		return errors.New("cnf claim missing")
-	} else if err := o.Cnf.COSEKey.Validate(); err != nil {
-		return fmt.Errorf("COSE key validation failed: %w", err)
 	}
 
 	return nil
