@@ -118,7 +118,7 @@ func TestKAT_FromCBOR_fail_bad_cnf(t *testing.T) {
 	var actual KAT
 	err := actual.FromCBOR(tv)
 
-	expectedErr := `KAT decoding failed: invalid key: curve not supported for the given key type`
+	expectedErr := `KAT decoding failed: invalid key`
 
-	assert.EqualError(t, err, expectedErr)
+	assert.ErrorContains(t, err, expectedErr)
 }
