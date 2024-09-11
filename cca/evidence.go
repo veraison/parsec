@@ -39,8 +39,12 @@ func (o *Evidence) FromCBOR(buf []byte) error {
 
 	if raw.PAT == nil {
 		return errors.New("nil PAT")
-	} else if err := o.Pat.FromCBOR(*raw.PAT); err != nil {
-		return fmt.Errorf("PAT validation: %w", err)
+	} else {
+		pat, err := ccatoken.DecodeAndValidateEvidenceFromCBOR(*raw.PAT)
+		if err != nil {
+			return fmt.Errorf("PAT validation: %w", err)
+		}
+		o.Pat = *pat
 	}
 
 	return nil
