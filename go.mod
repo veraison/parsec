@@ -7,9 +7,9 @@ require (
 	github.com/google/go-tpm v0.3.3
 	github.com/lestrrat-go/jwx/v2 v2.0.8
 	github.com/stretchr/testify v1.8.4
-	github.com/veraison/ccatoken v1.3.0
+	github.com/veraison/ccatoken v1.3.1
 	github.com/veraison/eat v0.0.0-20220117140849-ddaf59d69f53
-	github.com/veraison/go-cose v1.2.1
+	github.com/veraison/go-cose v1.3.0-rc.1
 	github.com/veraison/swid v0.0.1-beta.6
 )
 
