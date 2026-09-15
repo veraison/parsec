@@ -9,7 +9,7 @@ import (
 	"os"
 	"testing"
 
-	tpm2 "github.com/google/go-tpm/tpm2"
+	tpm2 "github.com/google/go-tpm/legacy/tpm2"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -148,7 +148,7 @@ func Test_PAT_Validate_MissingTPMVer(t *testing.T) {
 
 	tv := ""
 	p.TpmVer = &tv
-	expectedErr = "Empty TPM Version"
+	expectedErr = "empty TPM Version"
 	err = p.Validate()
 	assert.EqualError(t, err, expectedErr)
 

@@ -9,7 +9,7 @@ import (
 	"errors"
 	"fmt"
 
-	tpm2 "github.com/google/go-tpm/tpm2"
+	tpm2 "github.com/google/go-tpm/legacy/tpm2"
 )
 
 // PAT is a structure to wrap Platform Attestation Token
@@ -54,7 +54,7 @@ func (p PAT) Validate() error {
 	if p.TpmVer == nil {
 		return errors.New("TPM Version not set")
 	} else if *p.TpmVer == "" {
-		return errors.New("Empty TPM Version")
+		return errors.New("empty TPM Version")
 	}
 
 	if p.KID == nil {

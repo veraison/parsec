@@ -11,7 +11,7 @@ import (
 	"errors"
 	"fmt"
 
-	tpm2 "github.com/google/go-tpm/tpm2"
+	tpm2 "github.com/google/go-tpm/legacy/tpm2"
 	"github.com/google/go-tpm/tpmutil"
 	"github.com/veraison/eat"
 	"github.com/veraison/swid"
@@ -136,7 +136,7 @@ func verify(key crypto.PublicKey, data []byte, sig []byte) error {
 
 		verified := ecdsa.Verify(vk, hdata, s.ECC.R, s.ECC.S)
 		if !verified {
-			return errors.New("Verification failed")
+			return errors.New("verification failed")
 
 		}
 	default:
