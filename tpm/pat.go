@@ -9,7 +9,7 @@ import (
 	"errors"
 	"fmt"
 
-	tpm2 "github.com/google/go-tpm/tpm2"
+	tpm2 "github.com/google/go-tpm/legacy/tpm2"
 )
 
 // PAT is a structure to wrap Platform Attestation Token
