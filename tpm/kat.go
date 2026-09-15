@@ -12,6 +12,7 @@ import (
 	"reflect"
 
 	tpm2 "github.com/google/go-tpm/legacy/tpm2"
+	tpm2_new "github.com/google/go-tpm/tpm2"
 )
 
 type KAT struct {
@@ -55,7 +56,7 @@ func (k KAT) Validate() error {
 	if k.TpmVer == nil {
 		return errors.New("TPM Version not set")
 	} else if *k.TpmVer == "" {
-		return errors.New("Empty TPM Version")
+		return errors.New("empty TPM Version")
 	}
 
 	if k.KID == nil {
@@ -181,8 +182,14 @@ func (k *KAT) EncodePubArea(alg Algorithm, key crypto.PublicKey) error {
 			return fmt.Errorf("invalid ECDSA public key type: %T", key)
 		}
 
-		if !ek.Curve.IsOnCurve(ek.X, ek.Y) {
-			return errors.New("public key is not on the curve")
+		// check if it is a valid curve and key (fine as we only support NIST curves)
+		ek_ecdh, err := ek.ECDH()
+		if err != nil {
+			return errors.New("public key is not on the curve or invalid")
+		}
+		x, y, err := tpm2_new.ECCPoint(ek_ecdh)
+		if err != nil {
+			return errors.New("public key is invalid")
 		}
 
 		// Only following four curves are supported by TPM2
@@ -216,7 +223,7 @@ func (k *KAT) EncodePubArea(alg Algorithm, key crypto.PublicKey) error {
 					Hash: hashAlg,
 				},
 				CurveID: curve,
-				Point:   tpm2.ECPoint{XRaw: ek.X.Bytes(), YRaw: ek.Y.Bytes()},
+				Point:   tpm2.ECPoint{XRaw: x.Bytes(), YRaw: y.Bytes()},
 			},
 		}
 		pk, err := p.Encode()

@@ -93,7 +93,7 @@ func Test_KAT_Validate_MissingTPMVer(t *testing.T) {
 
 	tv := ""
 	k.TpmVer = &tv
-	expectedErr = "Empty TPM Version"
+	expectedErr = "empty TPM Version"
 	err = k.Validate()
 	assert.EqualError(t, err, expectedErr)
 }
