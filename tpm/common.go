@@ -136,7 +136,7 @@ func verify(key crypto.PublicKey, data []byte, sig []byte) error {
 
 		verified := ecdsa.Verify(vk, hdata, s.ECC.R, s.ECC.S)
 		if !verified {
-			return errors.New("Verification failed")
+			return errors.New("verification failed")
 
 		}
 	default:

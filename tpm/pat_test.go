@@ -148,7 +148,7 @@ func Test_PAT_Validate_MissingTPMVer(t *testing.T) {
 
 	tv := ""
 	p.TpmVer = &tv
-	expectedErr = "Empty TPM Version"
+	expectedErr = "empty TPM Version"
 	err = p.Validate()
 	assert.EqualError(t, err, expectedErr)
 
